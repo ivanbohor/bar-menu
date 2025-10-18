@@ -65,4 +65,94 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const googleSheetURL = 'https://docs.google
+            const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
+            const menuContainer = document.getElementById('menu-container');
+
+            // --- CÓDIGO REAL ---
+            // La siguiente línea ahora está activa para que se conecte a tu Google Sheet.
+            fetchMenuData();
+
+            async function fetchMenuData() {
+                menuContainer.innerHTML = `<p class="text-center text-gray-400">Cargando menú...</p>`;
+                try {
+                    const response = await fetch(googleSheetURL);
+                    if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
+                    
+                    const csvText = await response.text();
+                    const { items, promoText, deliveryText } = parseCSV(csvText);
+                    
+                    renderHeaderText(promoText, deliveryText);
+                    renderMenu(items);
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">Error al cargar el menú. Revise el enlace de Google Sheets y que esté publicado correctamente.</p>`;
+                }
+            }
+
+            function parseCSV(text) {
+                const lines = text.trim().split('\n');
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                const nameIndex = headers.indexOf('nombre');
+                const priceIndex = headers.indexOf('precio');
+                const categoryIndex = headers.indexOf('categoria');
+                const descriptionIndex = headers.indexOf('descripcion');
+                const promoIndex = headers.indexOf('promo_text');
+                const deliveryIndex = headers.indexOf('delivery_text');
+                const publicadoIndex = headers.indexOf('publicado_web');
+
+                if (nameIndex === -1 || priceIndex === -1) {
+                    throw new Error("El archivo CSV debe tener las columnas 'nombre' y 'precio'.");
+                }
+                
+                const firstDataLineValues = lines.length > 1 ? lines[1].split(',') : [];
+                const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex]?.trim() : '';
+                const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex]?.trim() : '';
+
+                const items = lines.slice(1).map(line => {
+                    const values = line.split(',');
+                    const nombre = values[nameIndex]?.trim() || '';
+                    const precio = parseFloat(values[priceIndex]?.trim());
+                    const categoria = values[categoryIndex]?.trim() || 'Varios';
+                    const descripcion = values[descriptionIndex]?.trim() || '';
+                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.trim().toLowerCase() : '';
+                    
+                    if (nombre && !isNaN(precio)) {
+                        return { nombre, precio, categoria, descripcion, publicado_web: publicado };
+                    }
+                    return null;
+                }).filter(item => item && item.publicado_web !== 'x');
+
+                return { items, promoText, deliveryText };
+            }
+            
+            function renderHeaderText(promo, delivery) {
+                const promoContainer = document.getElementById('promo-text-container');
+                const deliveryContainer = document.getElementById('delivery-text-container');
+
+                if (promo) {
+                    const formattedPromo = promo.replace(/\|/g, '<br>');
+                    promoContainer.innerHTML = `<div class="header-text">✨ ${formattedPromo} 💸</div>`;
+                }
+
+                if (delivery) {
+                    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+                    let formattedDelivery = delivery.replace(/\|/g, '<br>');
+                    formattedDelivery = formattedDelivery.replace(linkRegex, (match, text, url) => {
+                        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">${text}</a>`;
+                    });
+
+                    deliveryContainer.innerHTML = `<div class="header-text">${formattedDelivery}</div>`;
+                }
+            }
+            
+            function calcularPrecioMenu(precioNeto) {
+                const precioBruto = precioNeto / 0.9;
+                const resto = Math.floor(precioBruto) % 100;
+                const base = Math.floor(precioBruto / 100) * 100;
+
+                if (resto > 50) {
+                    return base + 100;
+                } else if (resto > 0) {
+                    return base + 50;
