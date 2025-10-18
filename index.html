@@ -195,4 +195,13 @@
                                 <h3 class="text-lg font-semibold text-white">${item.nombre}</h3>
                                 ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
                             </div>
-                            <p class="text-lg font-
+                            <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
+                        `;
+                        categoryContainer.appendChild(itemElement);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
