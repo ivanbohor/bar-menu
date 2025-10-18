@@ -34,7 +34,7 @@
             padding: 0;
             font-weight: 700;
             font-size: 1.1rem;
-            text-decoration: underline; /* Subrayado permanente */
+            text-decoration: underline;
             margin-top: 8px;
             transition: color 0.2s;
         }
@@ -68,17 +68,21 @@
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             const menuContainer = document.getElementById('menu-container');
 
-            // --- CÓDIGO REAL ---
-            // Esta función ahora se conecta directamente a tu Google Sheet.
             fetchMenuData();
 
             async function fetchMenuData() {
                 menuContainer.innerHTML = `<p class="text-center text-gray-400">Cargando menú...</p>`;
                 try {
-                    const response = await fetch(googleSheetURL);
+                    // --- SOLUCIÓN ANTI-CACHÉ ---
+                    // Se añade un parámetro de tiempo único para forzar a Google a enviar la versión más reciente.
+                    const urlConCacheBuster = `${googleSheetURL}&timestamp=${new Date().getTime()}`;
+                    const response = await fetch(urlConCacheBuster);
+                    
                     if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
                     
-                    const csvText = await response.text();
+                    let csvText = await response.text();
+                    csvText = csvText.replace(/^\uFEFF/, ''); // Limpia caracteres invisibles
+
                     const { items, promoText, deliveryText } = parseCSV(csvText);
                     
                     renderHeaderText(promoText, deliveryText);
@@ -86,13 +90,14 @@
 
                 } catch (error) {
                     console.error('Error:', error);
-                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">Error al cargar el menú. Revise el enlace de Google Sheets y que esté publicado correctamente.</p>`;
+                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
                 }
             }
 
+            // --- FUNCIÓN DE PARSEO MEJORADA Y ROBUSTA ---
             function parseCSV(text) {
-                const lines = text.trim().split('\n');
-                const headers = lines[0].split(',').map(h => h.trim());
+                const lines = text.trim().split(/\r?\n/);
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
                 
                 const nameIndex = headers.indexOf('nombre');
                 const priceIndex = headers.indexOf('precio');
@@ -103,20 +108,40 @@
                 const publicadoIndex = headers.indexOf('publicado_web');
 
                 if (nameIndex === -1 || priceIndex === -1) {
-                    throw new Error("El archivo CSV debe tener las columnas 'nombre' y 'precio'.");
+                    throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'. Verifica los encabezados en tu Google Sheet.`);
                 }
-                
-                const firstDataLineValues = lines.length > 1 ? lines[1].split(',') : [];
-                const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex]?.trim() : '';
-                const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex]?.trim() : '';
+
+                const parseCsvLine = (line) => {
+                    const values = [];
+                    let current = '';
+                    let inQuotes = false;
+                    for (const char of line) {
+                        if (char === '"' && !inQuotes) {
+                            inQuotes = true;
+                        } else if (char === '"' && inQuotes) {
+                            inQuotes = false;
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(current);
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    values.push(current);
+                    return values.map(v => v.trim());
+                };
+
+                const firstDataLineValues = lines.length > 1 ? parseCsvLine(lines[1]) : [];
+                const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex] : '';
+                const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex] : '';
 
                 const items = lines.slice(1).map(line => {
-                    const values = line.split(',');
-                    const nombre = values[nameIndex]?.trim() || '';
-                    const precio = parseFloat(values[priceIndex]?.trim());
-                    const categoria = values[categoryIndex]?.trim() || 'Varios';
-                    const descripcion = values[descriptionIndex]?.trim() || '';
-                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.trim().toLowerCase() : '';
+                    const values = parseCsvLine(line);
+                    const nombre = values[nameIndex] || '';
+                    const precio = parseFloat(values[priceIndex]);
+                    const categoria = values[categoryIndex] || 'Varios';
+                    const descripcion = values[descriptionIndex] || '';
+                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.toLowerCase() : '';
                     
                     if (nombre && !isNaN(precio)) {
                         return { nombre, precio, categoria, descripcion, publicado_web: publicado };
@@ -152,13 +177,9 @@
                 const resto = Math.floor(precioBruto) % 100;
                 const base = Math.floor(precioBruto / 100) * 100;
 
-                if (resto > 50) {
-                    return base + 100;
-                } else if (resto > 0) {
-                    return base + 50;
-                } else {
-                    return base;
-                }
+                if (resto > 50) return base + 100;
+                if (resto > 0) return base + 50;
+                return base;
             }
 
             function renderMenu(items) {
