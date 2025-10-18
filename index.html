@@ -34,12 +34,12 @@
             padding: 0;
             font-weight: 700;
             font-size: 1.1rem;
-            text-decoration: underline; /* Subrayado permanente */
+            text-decoration: underline;
             margin-top: 8px;
             transition: color 0.2s;
         }
         .delivery-button:hover {
-            color: #FFC857; /* Color amarillo del logo */
+            color: #FFC857;
         }
     </style>
 </head>
@@ -78,11 +78,9 @@
                     
                     let csvText = await response.text();
                     
-                    // --- CORRECCIÓN IMPORTANTE ---
-                    // Se añade esta línea para eliminar el carácter invisible (BOM) del inicio del archivo.
-                    if (csvText.charCodeAt(0) === 0xFEFF) {
-                        csvText = csvText.substring(1);
-                    }
+                    // --- CORRECCIÓN DEFINITIVA ---
+                    // Esta línea elimina cualquier carácter invisible (BOM) del inicio del archivo.
+                    csvText = csvText.replace(/^\uFEFF/, '');
 
                     const { items, promoText, deliveryText } = parseCSV(csvText);
                     
@@ -91,12 +89,12 @@
 
                 } catch (error) {
                     console.error('Error:', error);
-                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">Error al cargar el menú. Revise el enlace de Google Sheets y que esté publicado correctamente.</p>`;
+                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
                 }
             }
 
             function parseCSV(text) {
-                const lines = text.trim().split('\n');
+                const lines = text.trim().split(/\r?\n/);
                 const headers = lines[0].split(',').map(h => h.trim());
                 
                 const nameIndex = headers.indexOf('nombre');
@@ -108,7 +106,7 @@
                 const publicadoIndex = headers.indexOf('publicado_web');
 
                 if (nameIndex === -1 || priceIndex === -1) {
-                    throw new Error("El archivo CSV debe tener las columnas 'nombre' y 'precio'.");
+                    throw new Error(`No se encontraron las columnas 'nombre' y/o 'precio'. Verifique que los encabezados en Google Sheets sean correctos y estén en minúsculas.`);
                 }
                 
                 const firstDataLineValues = lines.length > 1 ? lines[1].split(',') : [];
@@ -182,7 +180,7 @@
                 Object.keys(itemsByCategory).sort().forEach(category => {
                     const categoryTitle = document.createElement('h2');
                     categoryTitle.className = 'text-3xl font-semibold text-white mt-8 mb-4 border-b-2 pb-2';
-                    categoryTitle.style.borderColor = '#FFC857'; // Color amarillo del logo
+                    categoryTitle.style.borderColor = '#FFC857';
                     categoryTitle.textContent = category;
                     menuContainer.appendChild(categoryTitle);
                     
@@ -201,3 +199,12 @@
                                 ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
                             </div>
                             <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
+                        `;
+                        categoryContainer.appendChild(itemElement);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
