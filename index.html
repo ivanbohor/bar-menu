@@ -18,28 +18,8 @@
         .menu-item:last-child {
             border-bottom: none;
         }
-        .header-text {
-            border: 1px solid #333;
-            background-color: rgba(30, 30, 30, 0.5);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        
-        .delivery-button {
-            display: inline-block;
-            background-color: transparent;
-            color: #ffffff;
-            padding: 0;
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-decoration: underline;
-            margin-top: 8px;
-            transition: color 0.2s;
-        }
-        .delivery-button:hover {
-            color: #FFC857;
+        h2 {
+            border-color: #FFC857; /* Mantenemos el estilo de color del logo */
         }
     </style>
 </head>
@@ -49,9 +29,6 @@
         <header class="text-center mb-8">
             <h1 class="text-4xl font-bold text-white mb-2">Bar español</h1>
             <p class="text-lg text-gray-400">Menu</p>
-            
-            <div id="promo-text-container" class="mt-6 text-gray-300"></div>
-            <div id="delivery-text-container" class="mt-4 text-gray-300"></div>
         </header>
 
         <main id="menu-container">
@@ -77,14 +54,10 @@
                     if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
                     
                     let csvText = await response.text();
-                    
-                    // --- CORRECCIÓN DEFINITIVA ---
-                    // Esta línea elimina cualquier carácter invisible (BOM) del inicio del archivo.
+                    // Limpieza del texto por si acaso
                     csvText = csvText.replace(/^\uFEFF/, '');
 
-                    const { items, promoText, deliveryText } = parseCSV(csvText);
-                    
-                    renderHeaderText(promoText, deliveryText);
+                    const items = parseCSV(csvText);
                     renderMenu(items);
 
                 } catch (error) {
@@ -95,73 +68,27 @@
 
             function parseCSV(text) {
                 const lines = text.trim().split(/\r?\n/);
-                const headers = lines[0].split(',').map(h => h.trim());
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
                 
                 const nameIndex = headers.indexOf('nombre');
                 const priceIndex = headers.indexOf('precio');
                 const categoryIndex = headers.indexOf('categoria');
-                const descriptionIndex = headers.indexOf('descripcion');
-                const promoIndex = headers.indexOf('promo_text');
-                const deliveryIndex = headers.indexOf('delivery_text');
-                const publicadoIndex = headers.indexOf('publicado_web');
 
                 if (nameIndex === -1 || priceIndex === -1) {
-                    throw new Error(`No se encontraron las columnas 'nombre' y/o 'precio'. Verifique que los encabezados en Google Sheets sean correctos y estén en minúsculas.`);
+                    throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'. Por favor, verifica los encabezados en tu Google Sheet.`);
                 }
-                
-                const firstDataLineValues = lines.length > 1 ? lines[1].split(',') : [];
-                const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex]?.trim() : '';
-                const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex]?.trim() : '';
 
-                const items = lines.slice(1).map(line => {
+                return lines.slice(1).map(line => {
                     const values = line.split(',');
                     const nombre = values[nameIndex]?.trim() || '';
                     const precio = parseFloat(values[priceIndex]?.trim());
-                    const categoria = values[categoryIndex]?.trim() || 'Varios';
-                    const descripcion = values[descriptionIndex]?.trim() || '';
-                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.trim().toLowerCase() : '';
+                    const categoria = categoryIndex !== -1 ? (values[categoryIndex]?.trim() || 'Varios') : 'Varios';
                     
                     if (nombre && !isNaN(precio)) {
-                        return { nombre, precio, categoria, descripcion, publicado_web: publicado };
+                        return { nombre, precio, categoria };
                     }
                     return null;
-                }).filter(item => item && item.publicado_web !== 'x');
-
-                return { items, promoText, deliveryText };
-            }
-            
-            function renderHeaderText(promo, delivery) {
-                const promoContainer = document.getElementById('promo-text-container');
-                const deliveryContainer = document.getElementById('delivery-text-container');
-
-                if (promo) {
-                    const formattedPromo = promo.replace(/\|/g, '<br>');
-                    promoContainer.innerHTML = `<div class="header-text">✨ ${formattedPromo} 💸</div>`;
-                }
-
-                if (delivery) {
-                    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
-                    let formattedDelivery = delivery.replace(/\|/g, '<br>');
-                    formattedDelivery = formattedDelivery.replace(linkRegex, (match, text, url) => {
-                        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">${text}</a>`;
-                    });
-
-                    deliveryContainer.innerHTML = `<div class="header-text">${formattedDelivery}</div>`;
-                }
-            }
-            
-            function calcularPrecioMenu(precioNeto) {
-                const precioBruto = precioNeto / 0.9;
-                const resto = Math.floor(precioBruto) % 100;
-                const base = Math.floor(precioBruto / 100) * 100;
-
-                if (resto > 50) {
-                    return base + 100;
-                } else if (resto > 0) {
-                    return base + 50;
-                } else {
-                    return base;
-                }
+                }).filter(Boolean); // Filtra cualquier línea que haya resultado en null
             }
 
             function renderMenu(items) {
@@ -172,15 +99,15 @@
                 }
                 
                 const itemsByCategory = items.reduce((acc, item) => {
-                    if (!acc[item.categoria]) acc[item.categoria] = [];
-                    acc[item.categoria].push(item);
+                    const category = item.categoria || 'Varios';
+                    if (!acc[category]) acc[category] = [];
+                    acc[category].push(item);
                     return acc;
                 }, {});
 
                 Object.keys(itemsByCategory).sort().forEach(category => {
                     const categoryTitle = document.createElement('h2');
                     categoryTitle.className = 'text-3xl font-semibold text-white mt-8 mb-4 border-b-2 pb-2';
-                    categoryTitle.style.borderColor = '#FFC857';
                     categoryTitle.textContent = category;
                     menuContainer.appendChild(categoryTitle);
                     
@@ -189,16 +116,13 @@
                     menuContainer.appendChild(categoryContainer);
 
                     itemsByCategory[category].forEach(item => {
-                        const precioMenu = calcularPrecioMenu(item.precio);
-                        
                         const itemElement = document.createElement('div');
                         itemElement.className = 'menu-item p-4 flex justify-between items-start';
                         itemElement.innerHTML = `
                             <div>
                                 <h3 class="text-lg font-semibold text-white">${item.nombre}</h3>
-                                ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
                             </div>
-                            <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
+                            <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${item.precio.toLocaleString('es-AR')}</p>
                         `;
                         categoryContainer.appendChild(itemElement);
                     });
