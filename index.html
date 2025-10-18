@@ -39,7 +39,7 @@
             transition: color 0.2s;
         }
         .delivery-button:hover {
-            color: #FFC857;
+            color: #FFC857; /* Color amarillo del logo */
         }
     </style>
 </head>
@@ -177,7 +177,7 @@
                 Object.keys(itemsByCategory).sort().forEach(category => {
                     const categoryTitle = document.createElement('h2');
                     categoryTitle.className = 'text-3xl font-semibold text-white mt-8 mb-4 border-b-2 pb-2';
-                    categoryTitle.style.borderColor = '#FFC857';
+                    categoryTitle.style.borderColor = '#FFC857'; // Color amarillo del logo
                     categoryTitle.textContent = category;
                     menuContainer.appendChild(categoryTitle);
                     
@@ -195,13 +195,4 @@
                                 <h3 class="text-lg font-semibold text-white">${item.nombre}</h3>
                                 ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
                             </div>
-                            <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
-                        `;
-                        categoryContainer.appendChild(itemElement);
-                    });
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+                            <p class="text-lg font-
