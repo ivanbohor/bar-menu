@@ -27,20 +27,19 @@
             line-height: 1.5;
         }
         
-        /* Estilo para los nuevos botones de delivery que se crean dinámicamente. */
         .delivery-button {
             display: inline-block;
-            background-color: #bb86fc;
-            color: #121212;
-            padding: 8px 16px;
-            border-radius: 9999px;
-            font-weight: 600;
-            text-decoration: none;
+            background-color: transparent;
+            color: #ffffff;
+            padding: 0;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: underline;
             margin-top: 8px;
-            transition: background-color 0.2s;
+            transition: color 0.2s;
         }
         .delivery-button:hover {
-            background-color: #a362f7;
+            color: #FFC857;
         }
     </style>
 </head>
@@ -69,16 +68,19 @@
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             const menuContainer = document.getElementById('menu-container');
 
-            // --- CÓDIGO REAL ---
             fetchMenuData();
 
             async function fetchMenuData() {
                 menuContainer.innerHTML = `<p class="text-center text-gray-400">Cargando menú...</p>`;
                 try {
-                    const response = await fetch(googleSheetURL);
+                    const urlConCacheBuster = `${googleSheetURL}&timestamp=${new Date().getTime()}`;
+                    const response = await fetch(urlConCacheBuster);
+                    
                     if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
                     
-                    const csvText = await response.text();
+                    let csvText = await response.text();
+                    csvText = csvText.replace(/^\uFEFF/, '');
+
                     const { items, promoText, deliveryText } = parseCSV(csvText);
                     
                     renderHeaderText(promoText, deliveryText);
@@ -86,13 +88,15 @@
 
                 } catch (error) {
                     console.error('Error:', error);
-                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">Error al cargar el menú. Revise el enlace de Google Sheets y que esté publicado correctamente.</p>`;
+                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
                 }
             }
 
+            // --- FUNCIÓN DE PARSEO MEJORADA Y ROBUSTA ---
             function parseCSV(text) {
-                const lines = text.trim().split('\n');
-                const headers = lines[0].split(',').map(h => h.trim());
+                const lines = text.trim().split(/\r?\n/);
+                // Limpia los encabezados de comillas y espacios
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
                 
                 const nameIndex = headers.indexOf('nombre');
                 const priceIndex = headers.indexOf('precio');
@@ -103,20 +107,39 @@
                 const publicadoIndex = headers.indexOf('publicado_web');
 
                 if (nameIndex === -1 || priceIndex === -1) {
-                    throw new Error("El archivo CSV debe tener las columnas 'nombre' y 'precio'.");
+                    throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'. Verifica los encabezados en tu Google Sheet.`);
                 }
                 
-                const firstDataLineValues = lines.length > 1 ? lines[1].split(',') : [];
-                const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex]?.trim() : '';
-                const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex]?.trim() : '';
+                // Función auxiliar para parsear una línea de CSV de forma segura
+                const parseCsvLine = (line) => {
+                    const values = [];
+                    let current = '';
+                    let inQuotes = false;
+                    for (let char of line) {
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    values.push(current.trim());
+                    return values;
+                };
+
+                const firstDataLineValues = lines.length > 1 ? parseCsvLine(lines[1]) : [];
+                const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex]?.replace(/"/g, '') : '';
+                const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex]?.replace(/"/g, '') : '';
 
                 const items = lines.slice(1).map(line => {
-                    const values = line.split(',');
-                    const nombre = values[nameIndex]?.trim() || '';
-                    const precio = parseFloat(values[priceIndex]?.trim());
-                    const categoria = values[categoryIndex]?.trim() || 'Varios';
-                    const descripcion = values[descriptionIndex]?.trim() || '';
-                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.trim().toLowerCase() : '';
+                    const values = parseCsvLine(line);
+                    const nombre = values[nameIndex]?.replace(/"/g, '') || '';
+                    const precio = parseFloat(values[priceIndex]?.replace(/"/g, ''));
+                    const categoria = values[categoryIndex]?.replace(/"/g, '') || 'Varios';
+                    const descripcion = values[descriptionIndex]?.replace(/"/g, '') || '';
+                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.replace(/"/g, '').toLowerCase() : '';
                     
                     if (nombre && !isNaN(precio)) {
                         return { nombre, precio, categoria, descripcion, publicado_web: publicado };
@@ -132,20 +155,18 @@
                 const deliveryContainer = document.getElementById('delivery-text-container');
 
                 if (promo) {
-                    promoContainer.innerHTML = `<div class="header-text">✨ ${promo} 💸</div>`;
+                    const formattedPromo = promo.replace(/\|/g, '<br>');
+                    promoContainer.innerHTML = `<div class="header-text">✨ ${formattedPromo} 💸</div>`;
                 }
 
                 if (delivery) {
-                    // Expresión regular para encontrar [texto](link)
                     const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
-                    
-                    // Reemplaza los | por saltos de línea y luego convierte los links a botones <a>
                     let formattedDelivery = delivery.replace(/\|/g, '<br>');
                     formattedDelivery = formattedDelivery.replace(linkRegex, (match, text, url) => {
                         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">${text}</a>`;
                     });
 
-                    deliveryContainer.innerHTML = `<div class="header-text">🛵 ${formattedDelivery} 📲</div>`;
+                    deliveryContainer.innerHTML = `<div class="header-text">${formattedDelivery}</div>`;
                 }
             }
             
@@ -179,7 +200,7 @@
                 Object.keys(itemsByCategory).sort().forEach(category => {
                     const categoryTitle = document.createElement('h2');
                     categoryTitle.className = 'text-3xl font-semibold text-white mt-8 mb-4 border-b-2 pb-2';
-                    categoryTitle.style.borderColor = '#bb86fc';
+                    categoryTitle.style.borderColor = '#FFC857';
                     categoryTitle.textContent = category;
                     menuContainer.appendChild(categoryTitle);
                     
