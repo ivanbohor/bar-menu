@@ -26,6 +26,22 @@
             font-size: 0.9rem;
             line-height: 1.5;
         }
+        
+        /* Estilo para los nuevos botones de delivery que se crean dinámicamente. */
+        .delivery-button {
+            display: inline-block;
+            background-color: #bb86fc;
+            color: #121212;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 8px;
+            transition: background-color 0.2s;
+        }
+        .delivery-button:hover {
+            background-color: #a362f7;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -54,7 +70,6 @@
             const menuContainer = document.getElementById('menu-container');
 
             // --- CÓDIGO REAL ---
-            // Ahora esta es la única función que se llama para cargar los datos.
             fetchMenuData();
 
             async function fetchMenuData() {
@@ -111,7 +126,7 @@
 
                 return { items, promoText, deliveryText };
             }
-
+            
             function renderHeaderText(promo, delivery) {
                 const promoContainer = document.getElementById('promo-text-container');
                 const deliveryContainer = document.getElementById('delivery-text-container');
@@ -121,7 +136,15 @@
                 }
 
                 if (delivery) {
-                    const formattedDelivery = delivery.replace(/\|/g, '<br>');
+                    // Expresión regular para encontrar [texto](link)
+                    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+                    
+                    // Reemplaza los | por saltos de línea y luego convierte los links a botones <a>
+                    let formattedDelivery = delivery.replace(/\|/g, '<br>');
+                    formattedDelivery = formattedDelivery.replace(linkRegex, (match, text, url) => {
+                        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">${text}</a>`;
+                    });
+
                     deliveryContainer.innerHTML = `<div class="header-text">🛵 ${formattedDelivery} 📲</div>`;
                 }
             }
