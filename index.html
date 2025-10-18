@@ -68,8 +68,6 @@
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             const menuContainer = document.getElementById('menu-container');
 
-            // --- CÓDIGO REAL ---
-            // Esta función ahora se conecta directamente a tu Google Sheet.
             fetchMenuData();
 
             async function fetchMenuData() {
@@ -78,7 +76,14 @@
                     const response = await fetch(googleSheetURL);
                     if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
                     
-                    const csvText = await response.text();
+                    let csvText = await response.text();
+                    
+                    // --- CORRECCIÓN IMPORTANTE ---
+                    // Se añade esta línea para eliminar el carácter invisible (BOM) del inicio del archivo.
+                    if (csvText.charCodeAt(0) === 0xFEFF) {
+                        csvText = csvText.substring(1);
+                    }
+
                     const { items, promoText, deliveryText } = parseCSV(csvText);
                     
                     renderHeaderText(promoText, deliveryText);
@@ -196,12 +201,3 @@
                                 ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
                             </div>
                             <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
-                        `;
-                        categoryContainer.appendChild(itemElement);
-                    });
-                });
-            }
-        });
-    </script>
-</body>
-</html>
