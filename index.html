@@ -27,21 +27,20 @@
             line-height: 1.5;
         }
         
-        /* --- ESTILO MODIFICADO --- */
-        /* Ya no es un botón, ahora es un link de texto estilizado */
+        /* Estilo para los nuevos botones de delivery que se crean dinámicamente. */
         .delivery-button {
             display: inline-block;
-            background-color: transparent; /* Sin fondo */
-            color: #ffffff; /* Texto blanco */
-            padding: 0;
-            font-weight: 700; /* Texto en negrita (grueso) */
-            font-size: 1.1rem; /* Texto un poco más grande */
-            text-decoration: none; /* Sin subrayado por defecto */
+            background-color: #bb86fc;
+            color: #121212;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
             margin-top: 8px;
-            transition: color 0.2s;
+            transition: background-color 0.2s;
         }
         .delivery-button:hover {
-            color: #bb86fc; /* Cambia al color principal al pasar el ratón */
+            background-color: #a362f7;
         }
     </style>
 </head>
@@ -137,8 +136,10 @@
                 }
 
                 if (delivery) {
+                    // Expresión regular para encontrar [texto](link)
                     const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
                     
+                    // Reemplaza los | por saltos de línea y luego convierte los links a botones <a>
                     let formattedDelivery = delivery.replace(/\|/g, '<br>');
                     formattedDelivery = formattedDelivery.replace(linkRegex, (match, text, url) => {
                         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">${text}</a>`;
