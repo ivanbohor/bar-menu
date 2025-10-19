@@ -5,60 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú - Bar español</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --primary-accent: #FFC857;
+            --border-color: #333;
+        }
         body {
-            background-color: #121212;
-            color: #e0e0e0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: 'Inter', sans-serif;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-bottom: 2rem;
+        }
+        .header-logo {
+            height: 140px; 
+            margin-bottom: 0.5rem;
+            border-radius: 16px; 
+        }
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.1em;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+        .header-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-color);
+            letter-spacing: 0.05em;
+            margin-top: -0.25rem;
+        }
+
+        .menu-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.08em;
+            text-align: center;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-separator {
+            text-align: center;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .category-separator::after {
+            content: '';
+            display: block;
+            width: 150px;
+            height: 20px;
+            margin: 0.5rem auto 0;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="%23FFC857" stroke-width="1" fill="none" /></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .category-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-accent);
+        }
+
         .menu-item {
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
         }
         .menu-item:last-child {
             border-bottom: none;
         }
+
         .header-text {
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
             background-color: rgba(30, 30, 30, 0.5);
             padding: 0.75rem;
             border-radius: 0.5rem;
             font-size: 0.9rem;
             line-height: 1.5;
+            text-align: center;
+            color: #fafafa;
         }
-        
         .delivery-button {
-            display: inline-block;
-            background-color: transparent;
+            display: inline;
             color: #ffffff;
-            padding: 0;
             font-weight: 700;
             font-size: 1.1rem;
             text-decoration: underline;
-            margin-top: 8px;
             transition: color 0.2s;
         }
         .delivery-button:hover {
-            color: #FFC857;
+            color: var(--primary-accent);
+        }
+        .delivery-links-container {
+            margin-top: 1rem;
+            display: inline-block;
+            text-align: left;
+        }
+        .footer-link {
+            text-decoration: underline;
+            color: #ffffff;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .footer-link:hover {
+            color: var(--primary-accent);
         }
     </style>
 </head>
 <body class="antialiased">
 
     <div class="container mx-auto p-6 max-w-2xl">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-white mb-2">Bar español</h1>
-            <p class="text-lg text-gray-400">Menu</p>
+        <header>
+            <div class="header-container">
+                <img src="https://i.postimg.cc/HkfvptWY/bar-logo-OPTM.png" alt="Logo Bar Español" class="header-logo">
+                <h1 class="main-title">Bar Español</h1>
+                <p class="header-subtitle">Desde 1981</p>
+            </div>
             
-            <div id="promo-text-container" class="mt-6 text-gray-300"></div>
             <div id="delivery-text-container" class="mt-4 text-gray-300"></div>
         </header>
+
+        <h2 class="menu-title">Menu</h2>
+        
+        <div id="promo-text-container" class="mb-8 text-gray-300"></div>
 
         <main id="menu-container">
             <!-- El contenido se cargará aquí -->
         </main>
 
         <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p class="text-xs text-white mb-2">
+                Hecho por Vanto. ¿Queres tambien un menu editable/QR para tu comercio? 
+                <a href="https://wa.me/541123920404?text=Hola,%20me%20interesa%20un%20menu%20QR" target="_blank" rel="noopener noreferrer" class="footer-link">Hablemos</a>
+            </p>
             <p>&copy; 2025 Bar español. Todos los derechos reservados.</p>
         </footer>
     </div>
@@ -73,32 +170,23 @@
             async function fetchMenuData() {
                 menuContainer.innerHTML = `<p class="text-center text-gray-400">Cargando menú...</p>`;
                 try {
-                    // --- SOLUCIÓN ANTI-CACHÉ ---
-                    // Se añade un parámetro de tiempo único para forzar a Google a enviar la versión más reciente.
                     const urlConCacheBuster = `${googleSheetURL}&timestamp=${new Date().getTime()}`;
                     const response = await fetch(urlConCacheBuster);
-                    
                     if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
-                    
                     let csvText = await response.text();
-                    csvText = csvText.replace(/^\uFEFF/, ''); // Limpia caracteres invisibles
-
+                    csvText = csvText.replace(/^\uFEFF/, '');
                     const { items, promoText, deliveryText } = parseCSV(csvText);
-                    
                     renderHeaderText(promoText, deliveryText);
                     renderMenu(items);
-
                 } catch (error) {
                     console.error('Error:', error);
                     menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
                 }
             }
 
-            // --- FUNCIÓN DE PARSEO MEJORADA Y ROBUSTA ---
             function parseCSV(text) {
                 const lines = text.trim().split(/\r?\n/);
                 const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                
                 const nameIndex = headers.indexOf('nombre');
                 const priceIndex = headers.indexOf('precio');
                 const categoryIndex = headers.indexOf('categoria');
@@ -106,49 +194,14 @@
                 const promoIndex = headers.indexOf('promo_text');
                 const deliveryIndex = headers.indexOf('delivery_text');
                 const publicadoIndex = headers.indexOf('publicado_web');
-
                 if (nameIndex === -1 || priceIndex === -1) {
                     throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'. Verifica los encabezados en tu Google Sheet.`);
                 }
-
-                const parseCsvLine = (line) => {
-                    const values = [];
-                    let current = '';
-                    let inQuotes = false;
-                    for (const char of line) {
-                        if (char === '"' && !inQuotes) {
-                            inQuotes = true;
-                        } else if (char === '"' && inQuotes) {
-                            inQuotes = false;
-                        } else if (char === ',' && !inQuotes) {
-                            values.push(current);
-                            current = '';
-                        } else {
-                            current += char;
-                        }
-                    }
-                    values.push(current);
-                    return values.map(v => v.trim());
-                };
-
+                const parseCsvLine = (line) => { const values = []; let current = ''; let inQuotes = false; for (const char of line) { if (char === '"' && !inQuotes) { inQuotes = true; } else if (char === '"' && inQuotes) { inQuotes = false; } else if (char === ',' && !inQuotes) { values.push(current); current = ''; } else { current += char; } } values.push(current); return values.map(v => v.trim()); };
                 const firstDataLineValues = lines.length > 1 ? parseCsvLine(lines[1]) : [];
                 const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex] : '';
                 const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex] : '';
-
-                const items = lines.slice(1).map(line => {
-                    const values = parseCsvLine(line);
-                    const nombre = values[nameIndex] || '';
-                    const precio = parseFloat(values[priceIndex]);
-                    const categoria = values[categoryIndex] || 'Varios';
-                    const descripcion = values[descriptionIndex] || '';
-                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.toLowerCase() : '';
-                    
-                    if (nombre && !isNaN(precio)) {
-                        return { nombre, precio, categoria, descripcion, publicado_web: publicado };
-                    }
-                    return null;
-                }).filter(item => item && item.publicado_web !== 'x');
-
+                const items = lines.slice(1).map(line => { const values = parseCsvLine(line); const nombre = values[nameIndex] || ''; const precio = parseFloat(values[priceIndex]); const categoria = values[categoryIndex] || 'Varios'; const descripcion = values[descriptionIndex] || ''; const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.toLowerCase() : ''; if (nombre && !isNaN(precio)) { return { nombre, precio, categoria, descripcion, publicado_web: publicado }; } return null; }).filter(item => item && item.publicado_web !== 'x');
                 return { items, promoText, deliveryText };
             }
             
@@ -158,17 +211,45 @@
 
                 if (promo) {
                     const formattedPromo = promo.replace(/\|/g, '<br>');
-                    promoContainer.innerHTML = `<div class="header-text">✨ ${formattedPromo} 💸</div>`;
+                    promoContainer.innerHTML = `<div class="header-text">${formattedPromo}</div>`;
                 }
 
                 if (delivery) {
-                    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
-                    let formattedDelivery = delivery.replace(/\|/g, '<br>');
-                    formattedDelivery = formattedDelivery.replace(linkRegex, (match, text, url) => {
-                        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">${text}</a>`;
+                    const parts = delivery.split('|');
+                    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
+                    
+                    let introHtml = '';
+                    let linksHtml = '';
+
+                    parts.forEach(part => {
+                        const currentPart = part.trim();
+                        const linkMatch = currentPart.match(linkRegex);
+                        const numberMatch = currentPart.match(/(\d{10,})/);
+
+                        if (numberMatch && currentPart.toLowerCase().includes('whatsapp')) {
+                            const number = numberMatch[0];
+                            const whatsappUrl = `https://wa.me/54${number}`;
+                            const whatsappLink = `<a href="${whatsappUrl}" target="_blank" rel="noopener noreferrer" class="delivery-button">Whatsapp</a>`;
+                            const finalHtml = currentPart.replace(/whatsapp/i, whatsappLink);
+                            introHtml += `<p>${finalHtml}</p>`;
+                        
+                        } else if (linkMatch) {
+                            const text = linkMatch[1];
+                            const url = linkMatch[2];
+                            linksHtml += `<div><a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">🛵 ${text}</a></div>`;
+                        
+                        } else {
+                            introHtml += `<p>${currentPart}</p>`;
+                        }
                     });
 
-                    deliveryContainer.innerHTML = `<div class="header-text">${formattedDelivery}</div>`;
+                    deliveryContainer.innerHTML = `
+                        <div class="header-text">
+                            ${introHtml}
+                            <div class="delivery-links-container">
+                                ${linksHtml}
+                            </div>
+                        </div>`;
                 }
             }
             
@@ -176,7 +257,6 @@
                 const precioBruto = precioNeto / 0.9;
                 const resto = Math.floor(precioBruto) % 100;
                 const base = Math.floor(precioBruto / 100) * 100;
-
                 if (resto > 50) return base + 100;
                 if (resto > 0) return base + 50;
                 return base;
@@ -195,12 +275,16 @@
                     return acc;
                 }, {});
 
-                Object.keys(itemsByCategory).sort().forEach(category => {
-                    const categoryTitle = document.createElement('h2');
-                    categoryTitle.className = 'text-3xl font-semibold text-white mt-8 mb-4 border-b-2 pb-2';
-                    categoryTitle.style.borderColor = '#FFC857';
+                // --- CAMBIO REALIZADO ---
+                // Se modifica el .sort() para ordenar por cantidad de items de mayor a menor.
+                Object.keys(itemsByCategory).sort((a, b) => itemsByCategory[b].length - itemsByCategory[a].length).forEach(category => {
+                    const categoryHeader = document.createElement('div');
+                    categoryHeader.className = 'category-separator';
+                    const categoryTitle = document.createElement('span');
+                    categoryTitle.className = 'category-title';
                     categoryTitle.textContent = category;
-                    menuContainer.appendChild(categoryTitle);
+                    categoryHeader.appendChild(categoryTitle);
+                    menuContainer.appendChild(categoryHeader);
                     
                     const categoryContainer = document.createElement('div');
                     categoryContainer.className = 'bg-gray-900 bg-opacity-50 rounded-lg shadow-lg';
