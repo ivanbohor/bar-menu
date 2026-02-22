@@ -148,8 +148,7 @@
         <div id="promo-text-container" class="mb-8 text-gray-300"></div>
 
         <main id="menu-container">
-            <!-- El contenido se cargará aquí -->
-        </main>
+            </main>
 
         <footer class="text-center mt-12 text-gray-500 text-sm">
             <p class="text-xs text-white mb-2">
@@ -165,19 +164,50 @@
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             const menuContainer = document.getElementById('menu-container');
 
+            // Configuración del caché
+            const CACHE_KEY = 'barEspanol_menuData';
+            const CACHE_TIME_KEY = 'barEspanol_menuTimestamp';
+            const CACHE_DURATION_MS = 15 * 60 * 1000; // 15 minutos en milisegundos
+
             fetchMenuData();
 
             async function fetchMenuData() {
                 menuContainer.innerHTML = `<p class="text-center text-gray-400">Cargando menú...</p>`;
+                
                 try {
-                    const urlConCacheBuster = `${googleSheetURL}&timestamp=${new Date().getTime()}`;
+                    const now = new Date().getTime();
+                    const cachedData = sessionStorage.getItem(CACHE_KEY);
+                    const cachedTimestamp = sessionStorage.getItem(CACHE_TIME_KEY);
+
+                    // 1. Verificamos si hay caché válido y no ha expirado
+                    if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < CACHE_DURATION_MS) {
+                        console.log("⚡ Cargando menú desde sessionStorage");
+                        const { items, promoText, deliveryText } = JSON.parse(cachedData);
+                        renderHeaderText(promoText, deliveryText);
+                        renderMenu(items);
+                        return; // Cortamos la ejecución aquí para no hacer el fetch
+                    }
+
+                    // 2. Si no hay caché o expiró, consultamos a Google Sheets
+                    console.log("🌐 Consultando menú a Google Sheets");
+                    const urlConCacheBuster = `${googleSheetURL}&timestamp=${now}`;
                     const response = await fetch(urlConCacheBuster);
                     if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
+                    
                     let csvText = await response.text();
                     csvText = csvText.replace(/^\uFEFF/, '');
+                    
+                    // 3. Parseamos los datos
                     const { items, promoText, deliveryText } = parseCSV(csvText);
+                    
+                    // 4. Guardamos en sessionStorage para la próxima vez
+                    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ items, promoText, deliveryText }));
+                    sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
+
+                    // 5. Renderizamos
                     renderHeaderText(promoText, deliveryText);
                     renderMenu(items);
+
                 } catch (error) {
                     console.error('Error:', error);
                     menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
@@ -194,14 +224,49 @@
                 const promoIndex = headers.indexOf('promo_text');
                 const deliveryIndex = headers.indexOf('delivery_text');
                 const publicadoIndex = headers.indexOf('publicado_web');
+                
                 if (nameIndex === -1 || priceIndex === -1) {
                     throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'. Verifica los encabezados en tu Google Sheet.`);
                 }
-                const parseCsvLine = (line) => { const values = []; let current = ''; let inQuotes = false; for (const char of line) { if (char === '"' && !inQuotes) { inQuotes = true; } else if (char === '"' && inQuotes) { inQuotes = false; } else if (char === ',' && !inQuotes) { values.push(current); current = ''; } else { current += char; } } values.push(current); return values.map(v => v.trim()); };
+                
+                const parseCsvLine = (line) => { 
+                    const values = []; 
+                    let current = ''; 
+                    let inQuotes = false; 
+                    for (const char of line) { 
+                        if (char === '"' && !inQuotes) { 
+                            inQuotes = true; 
+                        } else if (char === '"' && inQuotes) { 
+                            inQuotes = false; 
+                        } else if (char === ',' && !inQuotes) { 
+                            values.push(current); 
+                            current = ''; 
+                        } else { 
+                            current += char; 
+                        } 
+                    } 
+                    values.push(current); 
+                    return values.map(v => v.trim()); 
+                };
+                
                 const firstDataLineValues = lines.length > 1 ? parseCsvLine(lines[1]) : [];
                 const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex] : '';
                 const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex] : '';
-                const items = lines.slice(1).map(line => { const values = parseCsvLine(line); const nombre = values[nameIndex] || ''; const precio = parseFloat(values[priceIndex]); const categoria = values[categoryIndex] || 'Varios'; const descripcion = values[descriptionIndex] || ''; const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.toLowerCase() : ''; if (nombre && !isNaN(precio)) { return { nombre, precio, categoria, descripcion, publicado_web: publicado }; } return null; }).filter(item => item && item.publicado_web !== 'x');
+                
+                const items = lines.slice(1).map(line => { 
+                    const values = parseCsvLine(line); 
+                    const nombre = values[nameIndex] || ''; 
+                    const precio = parseFloat(values[priceIndex]); 
+                    const categoria = values[categoryIndex] || 'Varios'; 
+                    const descripcion = values[descriptionIndex] || ''; 
+                    const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.toLowerCase() : ''; 
+                    
+                    if (nombre && !isNaN(precio)) { 
+                        return { nombre, precio, categoria, descripcion, publicado_web: publicado }; 
+                    } 
+                    return null; 
+                }).filter(item => item && item.publicado_web !== 'x');
+                
                 return { items, promoText, deliveryText };
             }
             
@@ -275,8 +340,6 @@
                     return acc;
                 }, {});
 
-                // --- CAMBIO REALIZADO ---
-                // Se modifica el .sort() para ordenar por cantidad de items de mayor a menor.
                 Object.keys(itemsByCategory).sort((a, b) => itemsByCategory[b].length - itemsByCategory[a].length).forEach(category => {
                     const categoryHeader = document.createElement('div');
                     categoryHeader.className = 'category-separator';
