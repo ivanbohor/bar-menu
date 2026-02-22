@@ -116,29 +116,6 @@
         .wapp-button:hover {
             opacity: 0.8;
         }
-        
-        /* Estilos para los botones de las Apps */
-        .app-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: white;
-            text-decoration: none;
-            transition: transform 0.2s, opacity 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .app-btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-        .btn-peya { background-color: #FF0000; }
-        .btn-rappi { background-color: #FF441F; }
-        .btn-mp { background-color: #009EE3; }
-        .btn-default { background-color: #4B5563; }
 
         .footer-link {
             text-decoration: underline;
@@ -237,8 +214,6 @@
                 const descriptionIndex = headers.indexOf('descripcion');
                 const promoIndex = headers.indexOf('promo_text');
                 const publicadoIndex = headers.indexOf('publicado_web');
-                
-                // Nuevos índices
                 const principalIndex = headers.indexOf('principalhome_text');
                 const segundoIndex = headers.indexOf('segundohome_text');
                 
@@ -300,7 +275,6 @@
                 if (principal || segundo) {
                     let htmlContent = '<div class="header-text">';
 
-                    // Procesar el texto principal (y WhatsApp)
                     if (principal) {
                         const parts = principal.split('|');
                         parts.forEach(part => {
@@ -319,11 +293,10 @@
                         });
                     }
 
-                    // Procesar los links de las apps en fila
                     if (segundo) {
                         const linksParts = segundo.split('|');
                         const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
-                        let appsHtml = '<div class="flex flex-wrap justify-center gap-3 mt-4">';
+                        let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-4 mt-4">';
 
                         linksParts.forEach(part => {
                             const match = part.trim().match(linkRegex);
@@ -331,21 +304,27 @@
                                 const brandName = match[1].trim();
                                 const url = match[2].trim();
                                 
-                                let btnClass = 'btn-default';
-                                let icon = '🛵';
-
+                                let iconUrl = '';
                                 const brandLower = brandName.toLowerCase();
+                                
+                                // Asignar la imagen correspondiente según el nombre
                                 if (brandLower.includes('pedido') || brandLower.includes('peya')) {
-                                    btnClass = 'btn-peya';
+                                    iconUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRirX1EXfwOH78_BeSB7_VCWLrOI-jyu0NDLA&s';
                                 } else if (brandLower.includes('rappi')) {
-                                    btnClass = 'btn-rappi';
+                                    iconUrl = 'https://yt3.googleusercontent.com/cklnZMMCSXQCFRAPx3bRz7l6Sm7_2FClkvpO2BNMl28L6n2teR0H8DO5GgMXiZzHeStDyIO6=s900-c-k-c0x00ffffff-no-rj';
                                 } else if (brandLower.includes('mercado') || brandLower.includes('mp')) {
-                                    btnClass = 'btn-mp';
+                                    iconUrl = 'https://http2.mlstatic.com/storage/pog-cm-admin/calm-assets/3_C_fondoB--320x208--049529b9--rebrand-mp.webp?refresh=1';
                                 }
 
-                                appsHtml += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="app-btn ${btnClass}">
-                                    <span class="mr-2">${icon}</span> ${brandName}
-                                </a>`;
+                                if (iconUrl) {
+                                    appsHtml += `
+                                        <a href="${url}" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-110">
+                                            <img src="${iconUrl}" alt="${brandName}" class="h-10 md:h-12 w-auto object-contain rounded-md shadow-sm">
+                                        </a>`;
+                                } else {
+                                    // Fallback por si agregas otra app en el futuro sin imagen definida
+                                    appsHtml += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-white underline font-semibold">${brandName}</a>`;
+                                }
                             }
                         });
                         
