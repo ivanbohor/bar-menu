@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú - Bar español</title>
+    <link rel="icon" href="https://i.postimg.cc/HkfvptWY/bar-logo-OPTM.png" type="image/png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -96,29 +98,48 @@
         .header-text {
             border: 1px solid var(--border-color);
             background-color: rgba(30, 30, 30, 0.5);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
             text-align: center;
             color: #fafafa;
         }
-        .delivery-button {
-            display: inline;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-decoration: underline;
-            transition: color 0.2s;
-        }
-        .delivery-button:hover {
-            color: var(--primary-accent);
-        }
-        .delivery-links-container {
-            margin-top: 1rem;
+        .wapp-button {
             display: inline-block;
-            text-align: left;
+            color: #25D366;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: underline;
+            transition: opacity 0.2s;
         }
+        .wapp-button:hover {
+            opacity: 0.8;
+        }
+        
+        /* Estilos para los botones de las Apps */
+        .app-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: white;
+            text-decoration: none;
+            transition: transform 0.2s, opacity 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .app-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        .btn-peya { background-color: #FF0000; }
+        .btn-rappi { background-color: #FF441F; }
+        .btn-mp { background-color: #009EE3; }
+        .btn-default { background-color: #4B5563; }
+
         .footer-link {
             text-decoration: underline;
             color: #ffffff;
@@ -140,7 +161,7 @@
                 <p class="header-subtitle">Desde 1981</p>
             </div>
             
-            <div id="delivery-text-container" class="mt-4 text-gray-300"></div>
+            <div id="home-text-container" class="mt-4 text-gray-300"></div>
         </header>
 
         <h2 class="menu-title">Menu</h2>
@@ -164,10 +185,9 @@
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             const menuContainer = document.getElementById('menu-container');
 
-            // Configuración del caché
             const CACHE_KEY = 'barEspanol_menuData';
             const CACHE_TIME_KEY = 'barEspanol_menuTimestamp';
-            const CACHE_DURATION_MS = 15 * 60 * 1000; // 15 minutos en milisegundos
+            const CACHE_DURATION_MS = 15 * 60 * 1000; 
 
             fetchMenuData();
 
@@ -179,17 +199,13 @@
                     const cachedData = sessionStorage.getItem(CACHE_KEY);
                     const cachedTimestamp = sessionStorage.getItem(CACHE_TIME_KEY);
 
-                    // 1. Verificamos si hay caché válido y no ha expirado
                     if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < CACHE_DURATION_MS) {
-                        console.log("⚡ Cargando menú desde sessionStorage");
-                        const { items, promoText, deliveryText } = JSON.parse(cachedData);
-                        renderHeaderText(promoText, deliveryText);
+                        const { items, promoText, principalText, segundoText } = JSON.parse(cachedData);
+                        renderHeaderText(promoText, principalText, segundoText);
                         renderMenu(items);
-                        return; // Cortamos la ejecución aquí para no hacer el fetch
+                        return; 
                     }
 
-                    // 2. Si no hay caché o expiró, consultamos a Google Sheets
-                    console.log("🌐 Consultando menú a Google Sheets");
                     const urlConCacheBuster = `${googleSheetURL}&timestamp=${now}`;
                     const response = await fetch(urlConCacheBuster);
                     if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
@@ -197,15 +213,12 @@
                     let csvText = await response.text();
                     csvText = csvText.replace(/^\uFEFF/, '');
                     
-                    // 3. Parseamos los datos
-                    const { items, promoText, deliveryText } = parseCSV(csvText);
+                    const { items, promoText, principalText, segundoText } = parseCSV(csvText);
                     
-                    // 4. Guardamos en sessionStorage para la próxima vez
-                    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ items, promoText, deliveryText }));
+                    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ items, promoText, principalText, segundoText }));
                     sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
 
-                    // 5. Renderizamos
-                    renderHeaderText(promoText, deliveryText);
+                    renderHeaderText(promoText, principalText, segundoText);
                     renderMenu(items);
 
                 } catch (error) {
@@ -216,14 +229,18 @@
 
             function parseCSV(text) {
                 const lines = text.trim().split(/\r?\n/);
-                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+                
                 const nameIndex = headers.indexOf('nombre');
                 const priceIndex = headers.indexOf('precio');
                 const categoryIndex = headers.indexOf('categoria');
                 const descriptionIndex = headers.indexOf('descripcion');
                 const promoIndex = headers.indexOf('promo_text');
-                const deliveryIndex = headers.indexOf('delivery_text');
                 const publicadoIndex = headers.indexOf('publicado_web');
+                
+                // Nuevos índices
+                const principalIndex = headers.indexOf('principalhome_text');
+                const segundoIndex = headers.indexOf('segundohome_text');
                 
                 if (nameIndex === -1 || priceIndex === -1) {
                     throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'. Verifica los encabezados en tu Google Sheet.`);
@@ -251,7 +268,8 @@
                 
                 const firstDataLineValues = lines.length > 1 ? parseCsvLine(lines[1]) : [];
                 const promoText = promoIndex !== -1 ? firstDataLineValues[promoIndex] : '';
-                const deliveryText = deliveryIndex !== -1 ? firstDataLineValues[deliveryIndex] : '';
+                const principalText = principalIndex !== -1 ? firstDataLineValues[principalIndex] : '';
+                const segundoText = segundoIndex !== -1 ? firstDataLineValues[segundoIndex] : '';
                 
                 const items = lines.slice(1).map(line => { 
                     const values = parseCsvLine(line); 
@@ -267,54 +285,76 @@
                     return null; 
                 }).filter(item => item && item.publicado_web !== 'x');
                 
-                return { items, promoText, deliveryText };
+                return { items, promoText, principalText, segundoText };
             }
             
-            function renderHeaderText(promo, delivery) {
+            function renderHeaderText(promo, principal, segundo) {
                 const promoContainer = document.getElementById('promo-text-container');
-                const deliveryContainer = document.getElementById('delivery-text-container');
+                const homeContainer = document.getElementById('home-text-container');
 
                 if (promo) {
                     const formattedPromo = promo.replace(/\|/g, '<br>');
                     promoContainer.innerHTML = `<div class="header-text">${formattedPromo}</div>`;
                 }
 
-                if (delivery) {
-                    const parts = delivery.split('|');
-                    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
-                    
-                    let introHtml = '';
-                    let linksHtml = '';
+                if (principal || segundo) {
+                    let htmlContent = '<div class="header-text">';
 
-                    parts.forEach(part => {
-                        const currentPart = part.trim();
-                        const linkMatch = currentPart.match(linkRegex);
-                        const numberMatch = currentPart.match(/(\d{10,})/);
+                    // Procesar el texto principal (y WhatsApp)
+                    if (principal) {
+                        const parts = principal.split('|');
+                        parts.forEach(part => {
+                            const currentPart = part.trim();
+                            const numberMatch = currentPart.match(/(\d{10,})/);
 
-                        if (numberMatch && currentPart.toLowerCase().includes('whatsapp')) {
-                            const number = numberMatch[0];
-                            const whatsappUrl = `https://wa.me/54${number}`;
-                            const whatsappLink = `<a href="${whatsappUrl}" target="_blank" rel="noopener noreferrer" class="delivery-button">Whatsapp</a>`;
-                            const finalHtml = currentPart.replace(/whatsapp/i, whatsappLink);
-                            introHtml += `<p>${finalHtml}</p>`;
+                            if (numberMatch && currentPart.toLowerCase().includes('whatsapp')) {
+                                const number = numberMatch[0];
+                                const whatsappUrl = `https://wa.me/54${number}`;
+                                const whatsappLink = `<a href="${whatsappUrl}" target="_blank" rel="noopener noreferrer" class="wapp-button">Whatsapp</a>`;
+                                const finalHtml = currentPart.replace(/whatsapp/i, whatsappLink);
+                                htmlContent += `<p class="mb-2">${finalHtml}</p>`;
+                            } else {
+                                htmlContent += `<p class="mb-2">${currentPart}</p>`;
+                            }
+                        });
+                    }
+
+                    // Procesar los links de las apps en fila
+                    if (segundo) {
+                        const linksParts = segundo.split('|');
+                        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
+                        let appsHtml = '<div class="flex flex-wrap justify-center gap-3 mt-4">';
+
+                        linksParts.forEach(part => {
+                            const match = part.trim().match(linkRegex);
+                            if (match) {
+                                const brandName = match[1].trim();
+                                const url = match[2].trim();
+                                
+                                let btnClass = 'btn-default';
+                                let icon = '🛵';
+
+                                const brandLower = brandName.toLowerCase();
+                                if (brandLower.includes('pedido') || brandLower.includes('peya')) {
+                                    btnClass = 'btn-peya';
+                                } else if (brandLower.includes('rappi')) {
+                                    btnClass = 'btn-rappi';
+                                } else if (brandLower.includes('mercado') || brandLower.includes('mp')) {
+                                    btnClass = 'btn-mp';
+                                }
+
+                                appsHtml += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="app-btn ${btnClass}">
+                                    <span class="mr-2">${icon}</span> ${brandName}
+                                </a>`;
+                            }
+                        });
                         
-                        } else if (linkMatch) {
-                            const text = linkMatch[1];
-                            const url = linkMatch[2];
-                            linksHtml += `<div><a href="${url}" target="_blank" rel="noopener noreferrer" class="delivery-button">🛵 ${text}</a></div>`;
-                        
-                        } else {
-                            introHtml += `<p>${currentPart}</p>`;
-                        }
-                    });
+                        appsHtml += '</div>';
+                        htmlContent += appsHtml;
+                    }
 
-                    deliveryContainer.innerHTML = `
-                        <div class="header-text">
-                            ${introHtml}
-                            <div class="delivery-links-container">
-                                ${linksHtml}
-                            </div>
-                        </div>`;
+                    htmlContent += '</div>';
+                    homeContainer.innerHTML = htmlContent;
                 }
             }
             
