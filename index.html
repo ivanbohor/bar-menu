@@ -307,20 +307,20 @@
                                 let iconUrl = '';
                                 const brandLower = brandName.toLowerCase();
                                 
-                                // Logos fijos y robustos
+                                // TUS LINKS EXACTOS
                                 if (brandLower.includes('pedido') || brandLower.includes('peya')) {
-                                    iconUrl = 'https://cdn.worldvectorlogo.com/logos/pedidosya.svg';
+                                    iconUrl = 'https://w7.pngwing.com/pngs/606/220/png-transparent-pedidosya-hd-logo.png';
                                 } else if (brandLower.includes('rappi')) {
-                                    iconUrl = 'https://cdn.worldvectorlogo.com/logos/rappi.svg';
+                                    iconUrl = 'https://static.wikia.nocookie.net/logopedia/images/f/fd/Rappi.png/revision/latest?cb=20200212213348&path-prefix=es';
                                 } else if (brandLower.includes('mercado') || brandLower.includes('mp')) {
                                     iconUrl = 'https://http2.mlstatic.com/storage/pog-cm-admin/calm-assets/3_C_fondoB--320x208--049529b9--rebrand-mp.webp?refresh=1';
                                 }
 
                                 if (iconUrl) {
-                                    // bg-white y p-1 ayudan a que el SVG transparente se lea perfecto en tu fondo oscuro
+                                    // Agregado referrerpolicy="no-referrer" para saltar el bloqueo
                                     appsHtml += `
                                         <a href="${url}" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-110">
-                                            <img src="${iconUrl}" alt="${brandName}" class="h-10 md:h-12 w-auto object-contain rounded-md shadow-sm bg-white p-1">
+                                            <img src="${iconUrl}" alt="${brandName}" referrerpolicy="no-referrer" class="h-10 md:h-12 w-auto object-contain rounded-md shadow-sm bg-white p-1">
                                         </a>`;
                                 } else {
                                     appsHtml += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-white underline font-semibold">${brandName}</a>`;
