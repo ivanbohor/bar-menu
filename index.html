@@ -33,8 +33,8 @@
         .header-logo { height: 140px; margin-bottom: 0.5rem; border-radius: 16px; }
         .main-title { font-family: 'Playfair Display', serif; font-size: 2.25rem; font-weight: 700; color: #ffffff; letter-spacing: 0.1em; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
         .header-subtitle { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 400; color: var(--text-color); letter-spacing: 0.05em; margin-top: -0.25rem; }
-        .menu-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 2rem; margin-bottom: 0.5rem; }
-        .hoy-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-style: italic; color: var(--primary-accent); text-align: center; margin-bottom: 1.5rem; }
+        .menu-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .hoy-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; color: var(--primary-accent); text-align: center; margin-bottom: 1.5rem; }
         .category-separator { text-align: center; margin-top: 2.5rem; margin-bottom: 1.5rem; }
         .category-separator::after { content: ''; display: block; width: 150px; height: 20px; margin: 0.5rem auto 0; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="%23FFC857" stroke-width="1" fill="none" /></svg>'); background-repeat: no-repeat; background-position: center; }
         .category-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); }
@@ -53,29 +53,35 @@
 </head>
 <body class="antialiased relative">
 
-    <div class="container mx-auto p-6 max-w-2xl">
+    <div class="container mx-auto p-4 max-w-2xl">
         <header>
             <div class="header-container">
                 <img src="https://i.postimg.cc/HkfvptWY/bar-logo-OPTM.png" alt="Logo Bar Español" class="header-logo">
                 <h1 class="main-title">Bar Español</h1>
                 <p class="header-subtitle">Desde 1981</p>
             </div>
-            <div id="home-text-container" class="mt-4 text-gray-300"></div>
+            <div id="home-text-container" class="mt-4 mb-6 text-gray-300"></div>
         </header>
 
-        <h2 class="menu-title">Menú</h2>
-        
         <main id="menu-container">
-            <h3 id="titulo-hoy" class="hoy-title" style="display: none;">Hoy</h3>
+            <h3 id="titulo-hoy" class="hoy-title" style="display: none;">Platos del día</h3>
             
-            <div id="menu-dia-container" class="w-full flex flex-row flex-wrap justify-center gap-4 mb-4"></div>
+            <div id="menu-dia-container" class="w-full grid grid-cols-2 gap-3 mb-2 px-1"></div>
             
-            <div id="promo-text-container" class="mb-8 mt-6 text-gray-300"></div>
+            <div id="contenedor-descarga-global" class="text-center w-full mb-8 mt-4" style="display: none;">
+                <button id="btnDescargarPizarras" class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer flex items-center justify-center mx-auto">
+                    <i class="bi bi-download mr-1"></i> Descargar Pizarras
+                </button>
+            </div>
+            
+            <div id="promo-text-container" class="mb-8 mt-2 text-gray-300"></div>
+            
+            <h2 id="titulo-menu-resto" class="menu-title" style="display: none;">Menú</h2>
             
             <div id="resto-menu-container"></div>
         </main>
 
-        <footer class="text-center mt-12 text-gray-500 text-sm">
+        <footer class="text-center mt-12 text-gray-500 text-sm pb-8">
             <p class="text-xs text-white mb-2">
                 Hecho por Vanto. ¿Queres tambien un menu editable/QR para tu comercio? 
                 <a href="https://wa.me/541123920404?text=Hola,%20me%20interesa%20un%20menu%20QR" target="_blank" rel="noopener noreferrer" class="footer-link">Hablemos</a>
@@ -89,13 +95,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
-            
             const IMAGEN_PLANTILLA_URL = 'https://i.postimg.cc/Px1J9hBV/Whats-App-Image-2026-03-03-at-10-52-45.jpg'; 
 
             const menuDiaContainer = document.getElementById('menu-dia-container');
             const restoMenuContainer = document.getElementById('resto-menu-container');
             const plantillasOcultas = document.getElementById('plantillas-ocultas');
             const tituloHoy = document.getElementById('titulo-hoy');
+            const tituloMenuResto = document.getElementById('titulo-menu-resto');
+            const contenedorDescargaGlobal = document.getElementById('contenedor-descarga-global');
 
             const CACHE_KEY = 'barEspanol_menuData';
             const CACHE_TIME_KEY = 'barEspanol_menuTimestamp';
@@ -230,6 +237,8 @@
                 restoMenuContainer.innerHTML = '';
                 plantillasOcultas.innerHTML = '';
                 tituloHoy.style.display = 'none';
+                tituloMenuResto.style.display = 'none';
+                contenedorDescargaGlobal.style.display = 'none';
 
                 if (items.length === 0) {
                     restoMenuContainer.innerHTML = `<p class="text-center text-gray-400">No hay items en el menú para mostrar.</p>`;
@@ -249,9 +258,10 @@
                     }
                 });
                 
-                // --- 1. DIBUJAR LAS PIZARRAS (VISTA WEB Y VISTA COMPLETA OCULTA) ---
+                // --- 1. DIBUJAR LAS PIZARRAS (VISTA WEB EN GRILLA Y VISTA COMPLETA OCULTA) ---
                 if (menuDiaItems.length > 0) {
-                    tituloHoy.style.display = 'block'; // Mostramos "Hoy"
+                    tituloHoy.style.display = 'block'; 
+                    contenedorDescargaGlobal.style.display = 'block'; 
                     
                     const chunks = [];
                     for (let i = 0; i < menuDiaItems.length; i += 2) chunks.push(menuDiaItems.slice(i, i + 2));
@@ -263,15 +273,15 @@
                         chunk.forEach(plato => {
                             const precio = calcularPrecioMenu(plato.precio);
                             
-                            // HTML para la cajita chica de la web
+                            // HTML para la tarjetita compacta de la web
                             platosHtmlWeb += `
-                                <div class="mb-4 w-full px-2">
-                                    <div class="text-[1.5rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
-                                    <div class="text-[1.4rem] text-[#FFC857] mt-1 font-bold">$${precio.toLocaleString('es-AR')}</div>
+                                <div class="mb-3 w-full px-1">
+                                    <div class="text-[1.05rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
+                                    <div class="text-[1.1rem] text-[#FFC857] mt-0.5 font-bold">$${precio.toLocaleString('es-AR')}</div>
                                 </div>
                             `;
                             
-                            // HTML para la plantilla gigante oculta
+                            // HTML para la plantilla gigante oculta (para el estado de WhatsApp)
                             platosHtmlDescarga += `
                                 <div class="mb-6 w-full px-2">
                                     <div class="text-[2.2rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
@@ -280,21 +290,20 @@
                             `;
                         });
 
-                        // 1.A - LA CAJITA RECORTADA QUE VE EL USUARIO EN LA WEB (230px de ancho para que entren varias)
+                        // 1.A - LA CAJITA RECORTADA QUE VE EL USUARIO EN LA WEB (En grid)
                         menuDiaContainer.innerHTML += `
-                            <div class="flex flex-col items-center">
-                                <div class="w-full max-w-[230px] min-h-[220px] rounded-xl shadow-lg border border-gray-700 relative flex flex-col items-center justify-center p-4 text-center fuente-tiza" style="background-image: url('${IMAGEN_PLANTILLA_URL}'); background-size: cover; background-position: center;">
-                                    <div class="absolute inset-0 bg-black bg-opacity-30 rounded-xl z-0"></div> <div class="relative z-10 w-full">
-                                        ${platosHtmlWeb}
-                                    </div>
+                            <div class="w-full aspect-[4/5] rounded-xl shadow-lg border border-gray-700 relative flex flex-col items-center justify-between p-3 text-center fuente-tiza overflow-hidden" style="background-image: url('${IMAGEN_PLANTILLA_URL}'); background-size: cover; background-position: center;">
+                                <div class="absolute inset-0 bg-black bg-opacity-40 rounded-xl z-0"></div> <div class="relative z-10 w-full flex flex-col items-center justify-center flex-grow mt-2">
+                                    ${platosHtmlWeb}
                                 </div>
-                                <button class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer mt-3 mb-2 flex items-center justify-center descargas-pizarra" data-target="tarjeta-oculta-${index}">
-                                    <i class="bi bi-download mr-1"></i> Descargar Pizarra
-                                </button>
+                                
+                                <div class="relative z-10 w-full mb-1">
+                                    <span class="text-gray-300 text-[0.7rem] tracking-wide fuente-firma">precio efectivo</span>
+                                </div>
                             </div>
                         `;
 
-                        // 1.B - LA PLANTILLA GIGANTE OCULTA (Es la que se le saca la foto)
+                        // 1.B - LA PLANTILLA GIGANTE OCULTA (Para descargar)
                         plantillasOcultas.innerHTML += `
                             <div class="relative w-[400px] h-[711px] tarjeta-oculta" id="tarjeta-oculta-${index}">
                                 <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
@@ -310,55 +319,18 @@
                         `;
                     });
 
-                    // Botón para descargar TODAS las pizarras juntas
-                    if (chunks.length > 1) {
-                        menuDiaContainer.innerHTML += `
-                            <div class="w-full text-center mt-4">
-                                <button id="btnDescargarTodas" class="bg-gray-800 text-white border border-gray-600 font-bold py-2 px-6 rounded-full hover:bg-gray-700 transition flex items-center justify-center mx-auto">
-                                    <i class="bi bi-images mr-2"></i> Descargar Todas las Pizarras
-                                </button>
-                            </div>
-                        `;
-                    }
-
-                    // --- EVENTOS DE DESCARGA ---
-                    
-                    // Descargar una por una
-                    document.querySelectorAll('.descargas-pizarra').forEach(button => {
-                        button.addEventListener('click', async (e) => {
-                            const targetId = e.currentTarget.getAttribute('data-target');
-                            const tarjetaCompletaOculta = document.getElementById(targetId);
-                            const btn = e.currentTarget;
-                            const originalText = btn.innerHTML;
-                            btn.innerHTML = '<i class="bi bi-hourglass-split mr-1"></i> Generando...';
-                            btn.disabled = true;
-
-                            try {
-                                const canvas = await html2canvas(tarjetaCompletaOculta, {
-                                    scale: 2, 
-                                    useCORS: true, 
-                                    backgroundColor: null 
-                                });
-                                const link = document.createElement('a');
-                                link.download = `Menu_Dia_Completo.jpg`;
-                                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                                link.click();
-                            } catch (error) {
-                                alert("Error al capturar la imagen. Intentá nuevamente.");
-                            }
-                            btn.innerHTML = originalText;
-                            btn.disabled = false;
-                        });
-                    });
-
-                    // Descargar todas
-                    const btnTodas = document.getElementById('btnDescargarTodas');
-                    if(btnTodas) {
-                        btnTodas.addEventListener('click', async () => {
+                    // Lógica para descargar todas con un solo botón
+                    const btnDescargarPizarras = document.getElementById('btnDescargarPizarras');
+                    if(btnDescargarPizarras) {
+                        // Limpiamos listeners previos clonando el nodo para evitar múltiples descargas si se recarga el fetch
+                        const nuevoBtn = btnDescargarPizarras.cloneNode(true);
+                        btnDescargarPizarras.parentNode.replaceChild(nuevoBtn, btnDescargarPizarras);
+                        
+                        nuevoBtn.addEventListener('click', async () => {
                             const tarjetas = document.querySelectorAll('.tarjeta-oculta');
-                            const originalText = btnTodas.innerHTML;
-                            btnTodas.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i> Generando todas...';
-                            btnTodas.disabled = true;
+                            const originalText = nuevoBtn.innerHTML;
+                            nuevoBtn.innerHTML = '<i class="bi bi-hourglass-split mr-1"></i> Generando...';
+                            nuevoBtn.disabled = true;
 
                             for (let i = 0; i < tarjetas.length; i++) {
                                 try {
@@ -368,50 +340,55 @@
                                         backgroundColor: null 
                                     });
                                     const link = document.createElement('a');
-                                    link.download = `Menu_Dia_Completo_${i + 1}.jpg`;
+                                    link.download = `Menu_Dia_BarEspanol_${i + 1}.jpg`;
                                     link.href = canvas.toDataURL('image/jpeg', 0.9);
                                     link.click();
                                     await new Promise(r => setTimeout(r, 600)); 
                                 } catch (e) {
                                     console.error(e);
+                                    alert("Error al capturar. Asegurate de tener buena conexión.");
                                 }
                             }
-                            btnTodas.innerHTML = originalText;
-                            btnTodas.disabled = false;
+                            nuevoBtn.innerHTML = originalText;
+                            nuevoBtn.disabled = false;
                         });
                     }
                 }
 
-                // --- 2. DIBUJAR EL RESTO DEL MENÚ EN LISTA TRADICIONAL ---
-                const itemsByCategory = regularItems.reduce((acc, item) => {
-                    if (!acc[item.categoria]) acc[item.categoria] = [];
-                    acc[item.categoria].push(item);
-                    return acc;
-                }, {});
-
-                Object.keys(itemsByCategory).sort((a, b) => itemsByCategory[b].length - itemsByCategory[a].length).forEach(category => {
-                    const header = document.createElement('div');
-                    header.className = 'category-separator';
-                    header.innerHTML = `<span class="category-title">${category}</span>`;
-                    restoMenuContainer.appendChild(header);
+                // --- 2. DIBUJAR EL RESTO DEL MENÚ ---
+                if (regularItems.length > 0) {
+                    tituloMenuResto.style.display = 'block'; // Mostramos "Menú"
                     
-                    const catContainer = document.createElement('div');
-                    catContainer.className = 'bg-gray-900 bg-opacity-50 rounded-lg shadow-lg mb-6';
-                    restoMenuContainer.appendChild(catContainer);
+                    const itemsByCategory = regularItems.reduce((acc, item) => {
+                        if (!acc[item.categoria]) acc[item.categoria] = [];
+                        acc[item.categoria].push(item);
+                        return acc;
+                    }, {});
 
-                    itemsByCategory[category].forEach(item => {
-                        const precioMenu = calcularPrecioMenu(item.precio);
-                        catContainer.innerHTML += `
-                            <div class="menu-item p-4 flex justify-between items-start">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-white">${item.nombreLimpio}</h3>
-                                    ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
+                    Object.keys(itemsByCategory).sort((a, b) => itemsByCategory[b].length - itemsByCategory[a].length).forEach(category => {
+                        const header = document.createElement('div');
+                        header.className = 'category-separator';
+                        header.innerHTML = `<span class="category-title">${category}</span>`;
+                        restoMenuContainer.appendChild(header);
+                        
+                        const catContainer = document.createElement('div');
+                        catContainer.className = 'bg-gray-900 bg-opacity-50 rounded-lg shadow-lg mb-6';
+                        restoMenuContainer.appendChild(catContainer);
+
+                        itemsByCategory[category].forEach(item => {
+                            const precioMenu = calcularPrecioMenu(item.precio);
+                            catContainer.innerHTML += `
+                                <div class="menu-item p-4 flex justify-between items-start">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-white">${item.nombreLimpio}</h3>
+                                        ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
+                                    </div>
+                                    <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
                                 </div>
-                                <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
-                            </div>
-                        `;
+                            `;
+                        });
                     });
-                });
+                }
             }
         });
     </script>
