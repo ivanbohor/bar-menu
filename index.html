@@ -27,12 +27,14 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
         }
         .header-container { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.25rem; margin-bottom: 2rem; }
         .header-logo { height: 140px; margin-bottom: 0.5rem; border-radius: 16px; }
         .main-title { font-family: 'Playfair Display', serif; font-size: 2.25rem; font-weight: 700; color: #ffffff; letter-spacing: 0.1em; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
         .header-subtitle { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 400; color: var(--text-color); letter-spacing: 0.05em; margin-top: -0.25rem; }
-        .menu-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 3rem; margin-bottom: 1rem; }
+        .menu-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 2rem; margin-bottom: 0.5rem; }
+        .hoy-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-style: italic; color: var(--primary-accent); text-align: center; margin-bottom: 1.5rem; }
         .category-separator { text-align: center; margin-top: 2.5rem; margin-bottom: 1.5rem; }
         .category-separator::after { content: ''; display: block; width: 150px; height: 20px; margin: 0.5rem auto 0; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="%23FFC857" stroke-width="1" fill="none" /></svg>'); background-repeat: no-repeat; background-position: center; }
         .category-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); }
@@ -49,7 +51,7 @@
         .fuente-firma { font-family: 'Caveat', cursive; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased relative">
 
     <div class="container mx-auto p-6 max-w-2xl">
         <header>
@@ -62,10 +64,13 @@
         </header>
 
         <h2 class="menu-title">Menú</h2>
-        <div id="promo-text-container" class="mb-8 text-gray-300"></div>
-
+        
         <main id="menu-container">
-            <div id="menu-dia-container" class="w-full flex flex-row flex-wrap justify-center gap-4 mb-8"></div>
+            <h3 id="titulo-hoy" class="hoy-title" style="display: none;">Hoy</h3>
+            
+            <div id="menu-dia-container" class="w-full flex flex-row flex-wrap justify-center gap-4 mb-4"></div>
+            
+            <div id="promo-text-container" class="mb-8 mt-6 text-gray-300"></div>
             
             <div id="resto-menu-container"></div>
         </main>
@@ -79,15 +84,18 @@
         </footer>
     </div>
 
+    <div id="plantillas-ocultas" style="position: absolute; left: -9999px; top: 0;"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             
-            // Reemplazar este link con el link directo de Postimg de tu nueva plantilla
             const IMAGEN_PLANTILLA_URL = 'https://i.postimg.cc/Px1J9hBV/Whats-App-Image-2026-03-03-at-10-52-45.jpg'; 
 
             const menuDiaContainer = document.getElementById('menu-dia-container');
             const restoMenuContainer = document.getElementById('resto-menu-container');
+            const plantillasOcultas = document.getElementById('plantillas-ocultas');
+            const tituloHoy = document.getElementById('titulo-hoy');
 
             const CACHE_KEY = 'barEspanol_menuData';
             const CACHE_TIME_KEY = 'barEspanol_menuTimestamp';
@@ -220,6 +228,8 @@
             function renderMenu(items) {
                 menuDiaContainer.innerHTML = '';
                 restoMenuContainer.innerHTML = '';
+                plantillasOcultas.innerHTML = '';
+                tituloHoy.style.display = 'none';
 
                 if (items.length === 0) {
                     restoMenuContainer.innerHTML = `<p class="text-center text-gray-400">No hay items en el menú para mostrar.</p>`;
@@ -239,73 +249,94 @@
                     }
                 });
                 
-                // --- 1. DIBUJAR LAS PIZARRAS VISUALES EN LA WEB CON ZOOM Y RECORTE ---
+                // --- 1. DIBUJAR LAS PIZARRAS (VISTA WEB Y VISTA COMPLETA OCULTA) ---
                 if (menuDiaItems.length > 0) {
+                    tituloHoy.style.display = 'block'; // Mostramos "Hoy"
+                    
                     const chunks = [];
                     for (let i = 0; i < menuDiaItems.length; i += 2) chunks.push(menuDiaItems.slice(i, i + 2));
 
                     chunks.forEach((chunk, index) => {
-                        let platosHtml = '';
+                        let platosHtmlWeb = '';
+                        let platosHtmlDescarga = '';
+                        
                         chunk.forEach(plato => {
                             const precio = calcularPrecioMenu(plato.precio);
-                            platosHtml += `
+                            
+                            // HTML para la cajita chica de la web
+                            platosHtmlWeb += `
+                                <div class="mb-4 w-full px-2">
+                                    <div class="text-[1.5rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
+                                    <div class="text-[1.4rem] text-[#FFC857] mt-1 font-bold">$${precio.toLocaleString('es-AR')}</div>
+                                </div>
+                            `;
+                            
+                            // HTML para la plantilla gigante oculta
+                            platosHtmlDescarga += `
                                 <div class="mb-6 w-full px-2">
-                                    <div class="text-[1.8rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
-                                    <div class="text-[1.6rem] text-[#FFC857] mt-1 font-bold">$${precio.toLocaleString('es-AR')}</div>
+                                    <div class="text-[2.2rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
+                                    <div class="text-[1.8rem] text-[#FFC857] mt-2 font-bold">$${precio.toLocaleString('es-AR')}</div>
                                 </div>
                             `;
                         });
 
-                        // --- Wrapper de Recorte (Muestra la pizarra más chica y cortada) ---
-                        // max-w-[270px] es el ancho reducido (~25% más chicas que 360px). h-[450px] es la altura visible de recorte.
+                        // 1.A - LA CAJITA RECORTADA QUE VE EL USUARIO EN LA WEB (230px de ancho para que entren varias)
                         menuDiaContainer.innerHTML += `
-                            <div class="tarjeta-menu-dia-vista-web w-full max-w-[270px] h-[450px] overflow-hidden rounded-xl shadow-lg mb-6 border border-gray-700 relative flex justify-center items-start">
-                                
-                                <div class="relative w-full aspect-[9/16] tarjeta-pizarra top-[-150px]" id="tarjeta-${index}">
-                                    <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
-                                    
-                                    <div class="relative z-10 flex flex-col items-center justify-center w-full h-full pt-[35%] pb-[30%] text-center fuente-tiza">
-                                        ${platosHtml}
-                                    </div>
-                                    
-                                    <div class="absolute bottom-[16%] w-full text-center z-10 px-4">
-                                        <span class="text-[#e0e0e0] text-xl tracking-wide fuente-firma">* Promoción válida abonando en efectivo</span>
+                            <div class="flex flex-col items-center">
+                                <div class="w-full max-w-[230px] min-h-[220px] rounded-xl shadow-lg border border-gray-700 relative flex flex-col items-center justify-center p-4 text-center fuente-tiza" style="background-image: url('${IMAGEN_PLANTILLA_URL}'); background-size: cover; background-position: center;">
+                                    <div class="absolute inset-0 bg-black bg-opacity-30 rounded-xl z-0"></div> <div class="relative z-10 w-full">
+                                        ${platosHtmlWeb}
                                     </div>
                                 </div>
+                                <button class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer mt-3 mb-2 flex items-center justify-center descargas-pizarra" data-target="tarjeta-oculta-${index}">
+                                    <i class="bi bi-download mr-1"></i> Descargar Pizarra
+                                </button>
+                            </div>
+                        `;
 
-                                <div class="text-center mt-2 w-full absolute bottom-[-10px]">
-                                    <button id="btnDescargarPizarra-${index}" class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer flex items-center justify-center mx-auto descargas-pizarra" data-target="tarjeta-${index}">
-                                        <i class="bi bi-download mr-1"></i> Descargar pizarra completa
-                                    </button>
+                        // 1.B - LA PLANTILLA GIGANTE OCULTA (Es la que se le saca la foto)
+                        plantillasOcultas.innerHTML += `
+                            <div class="relative w-[400px] h-[711px] tarjeta-oculta" id="tarjeta-oculta-${index}">
+                                <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
+                                
+                                <div class="relative z-10 flex flex-col items-center justify-center w-full h-full pt-[35%] pb-[30%] text-center fuente-tiza">
+                                    ${platosHtmlDescarga}
+                                </div>
+                                
+                                <div class="absolute bottom-[16%] w-full text-center z-10 px-4">
+                                    <span class="text-[#e0e0e0] text-xl tracking-wide fuente-firma">* Promoción válida abonando en efectivo</span>
                                 </div>
                             </div>
                         `;
                     });
 
-                    // Botón global opcional (borrar si prefieren solo los botones individuales)
-                    menuDiaContainer.innerHTML += `
-                        <div class="text-center mt-2 mb-10 w-full">
-                            <button id="btnDescargarPizarras" class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer flex items-center justify-center mx-auto">
-                                <i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} completa${chunks.length > 1 ? 's' : ''} para estado
-                            </button>
-                        </div>
-                    `;
+                    // Botón para descargar TODAS las pizarras juntas
+                    if (chunks.length > 1) {
+                        menuDiaContainer.innerHTML += `
+                            <div class="w-full text-center mt-4">
+                                <button id="btnDescargarTodas" class="bg-gray-800 text-white border border-gray-600 font-bold py-2 px-6 rounded-full hover:bg-gray-700 transition flex items-center justify-center mx-auto">
+                                    <i class="bi bi-images mr-2"></i> Descargar Todas las Pizarras
+                                </button>
+                            </div>
+                        `;
+                    }
 
-                    // Lógica para descargar tarjetas individuales
+                    // --- EVENTOS DE DESCARGA ---
+                    
+                    // Descargar una por una
                     document.querySelectorAll('.descargas-pizarra').forEach(button => {
                         button.addEventListener('click', async (e) => {
                             const targetId = e.currentTarget.getAttribute('data-target');
-                            const tarjetaCompleta = document.getElementById(targetId);
+                            const tarjetaCompletaOculta = document.getElementById(targetId);
                             const btn = e.currentTarget;
                             const originalText = btn.innerHTML;
                             btn.innerHTML = '<i class="bi bi-hourglass-split mr-1"></i> Generando...';
                             btn.disabled = true;
 
                             try {
-                                const canvas = await html2canvas(tarjetaCompleta, {
+                                const canvas = await html2canvas(tarjetaCompletaOculta, {
                                     scale: 2, 
                                     useCORS: true, 
-                                    allowTaint: true,
                                     backgroundColor: null 
                                 });
                                 const link = document.createElement('a');
@@ -313,40 +344,42 @@
                                 link.href = canvas.toDataURL('image/jpeg', 0.9);
                                 link.click();
                             } catch (error) {
-                                alert("Error al capturar la imagen completa. Intentá nuevamente.");
+                                alert("Error al capturar la imagen. Intentá nuevamente.");
                             }
                             btn.innerHTML = originalText;
                             btn.disabled = false;
                         });
                     });
 
-                    // Lógica para descargar todas (Ahora saca foto a lo que el usuario está viendo)
-                    document.getElementById('btnDescargarPizarras').addEventListener('click', async () => {
-                        const tarjetas = document.querySelectorAll('.tarjeta-pizarra');
-                        const btn = document.getElementById('btnDescargarPizarras');
-                        btn.innerHTML = '<i class="bi bi-hourglass-split mr-1"></i> Generando...';
-                        btn.disabled = true;
+                    // Descargar todas
+                    const btnTodas = document.getElementById('btnDescargarTodas');
+                    if(btnTodas) {
+                        btnTodas.addEventListener('click', async () => {
+                            const tarjetas = document.querySelectorAll('.tarjeta-oculta');
+                            const originalText = btnTodas.innerHTML;
+                            btnTodas.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i> Generando todas...';
+                            btnTodas.disabled = true;
 
-                        for (let i = 0; i < tarjetas.length; i++) {
-                            try {
-                                const canvas = await html2canvas(tarjetas[i], {
-                                    scale: 2, 
-                                    useCORS: true, 
-                                    allowTaint: true,
-                                    backgroundColor: null 
-                                });
-                                const link = document.createElement('a');
-                                link.download = `Menu_Dia_Completo_${i + 1}.jpg`;
-                                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                                link.click();
-                                await new Promise(r => setTimeout(r, 600)); 
-                            } catch (e) {
-                                alert("Error al capturar la imagen. Intentá nuevamente.");
+                            for (let i = 0; i < tarjetas.length; i++) {
+                                try {
+                                    const canvas = await html2canvas(tarjetas[i], {
+                                        scale: 2, 
+                                        useCORS: true, 
+                                        backgroundColor: null 
+                                    });
+                                    const link = document.createElement('a');
+                                    link.download = `Menu_Dia_Completo_${i + 1}.jpg`;
+                                    link.href = canvas.toDataURL('image/jpeg', 0.9);
+                                    link.click();
+                                    await new Promise(r => setTimeout(r, 600)); 
+                                } catch (e) {
+                                    console.error(e);
+                                }
                             }
-                        }
-                        btn.innerHTML = `<i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} completa${chunks.length > 1 ? 's' : ''} para estado`;
-                        btn.disabled = false;
-                    });
+                            btnTodas.innerHTML = originalText;
+                            btnTodas.disabled = false;
+                        });
+                    }
                 }
 
                 // --- 2. DIBUJAR EL RESTO DEL MENÚ EN LISTA TRADICIONAL ---
