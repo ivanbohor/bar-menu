@@ -7,12 +7,13 @@
     <link rel="icon" href="https://i.postimg.cc/HkfvptWY/bar-logo-OPTM.png" type="image/png">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Kalam:wght@700&display=swap" rel="stylesheet">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
@@ -27,108 +28,25 @@
             color: var(--text-color);
             font-family: 'Inter', sans-serif;
         }
+        .header-container { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.25rem; margin-bottom: 2rem; }
+        .header-logo { height: 140px; margin-bottom: 0.5rem; border-radius: 16px; }
+        .main-title { font-family: 'Playfair Display', serif; font-size: 2.25rem; font-weight: 700; color: #ffffff; letter-spacing: 0.1em; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+        .header-subtitle { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 400; color: var(--text-color); letter-spacing: 0.05em; margin-top: -0.25rem; }
+        .menu-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 3rem; margin-bottom: 1rem; }
+        .category-separator { text-align: center; margin-top: 2.5rem; margin-bottom: 1.5rem; }
+        .category-separator::after { content: ''; display: block; width: 150px; height: 20px; margin: 0.5rem auto 0; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="%23FFC857" stroke-width="1" fill="none" /></svg>'); background-repeat: no-repeat; background-position: center; }
+        .category-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); }
+        .menu-item { border-bottom: 1px solid var(--border-color); }
+        .menu-item:last-child { border-bottom: none; }
+        .header-text { border: 1px solid var(--border-color); background-color: rgba(30, 30, 30, 0.5); padding: 1rem; border-radius: 0.75rem; font-size: 0.95rem; line-height: 1.6; text-align: center; color: #fafafa; }
+        .wapp-button { display: inline-block; color: #25D366; font-weight: 700; font-size: 1.05rem; text-decoration: underline; transition: opacity 0.2s; }
+        .wapp-button:hover { opacity: 0.8; }
+        .footer-link { text-decoration: underline; color: #ffffff; font-weight: 600; transition: color 0.2s; }
+        .footer-link:hover { color: var(--primary-accent); }
         
-        .header-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 0.25rem;
-            margin-bottom: 2rem;
-        }
-        .header-logo {
-            height: 140px; 
-            margin-bottom: 0.5rem;
-            border-radius: 16px; 
-        }
-        .main-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.25rem;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 0.1em;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-        }
-        .header-subtitle {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 400;
-            color: var(--text-color);
-            letter-spacing: 0.05em;
-            margin-top: -0.25rem;
-        }
-
-        .menu-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 0.08em;
-            text-align: center;
-            margin-top: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .category-separator {
-            text-align: center;
-            margin-top: 2.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .category-separator::after {
-            content: '';
-            display: block;
-            width: 150px;
-            height: 20px;
-            margin: 0.5rem auto 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="%23FFC857" stroke-width="1" fill="none" /></svg>');
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        .category-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--primary-accent);
-        }
-
-        .menu-item {
-            border-bottom: 1px solid var(--border-color);
-        }
-        .menu-item:last-child {
-            border-bottom: none;
-        }
-
-        .header-text {
-            border: 1px solid var(--border-color);
-            background-color: rgba(30, 30, 30, 0.5);
-            padding: 1rem;
-            border-radius: 0.75rem;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            text-align: center;
-            color: #fafafa;
-        }
-        .wapp-button {
-            display: inline-block;
-            color: #25D366;
-            font-weight: 700;
-            font-size: 1.05rem;
-            text-decoration: underline;
-            transition: opacity 0.2s;
-        }
-        .wapp-button:hover {
-            opacity: 0.8;
-        }
-
-        .footer-link {
-            text-decoration: underline;
-            color: #ffffff;
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-        .footer-link:hover {
-            color: var(--primary-accent);
-        }
+        /* Estilos Pizarra */
+        .fuente-tiza { font-family: 'Kalam', cursive; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
+        .fuente-firma { font-family: 'Caveat', cursive; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body class="antialiased">
@@ -140,25 +58,16 @@
                 <h1 class="main-title">Bar Español</h1>
                 <p class="header-subtitle">Desde 1981</p>
             </div>
-            
             <div id="home-text-container" class="mt-4 text-gray-300"></div>
         </header>
 
         <h2 class="menu-title">Menú</h2>
-        
         <div id="promo-text-container" class="mb-8 text-gray-300"></div>
 
-        <div id="descargarEstadosBtnContainer" class="text-center my-4" style="display: none;">
-            <button id="btnDescargarEstados" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded-lg shadow-lg flex items-center justify-center mx-auto transition-transform hover:scale-105">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-download mr-2" viewBox="0 0 16 16">
-                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                </svg>
-                Generar Imágenes para WhatsApp
-            </button>
-        </div>
-
         <main id="menu-container">
+            <div id="menu-dia-container" class="w-full mb-8"></div>
+            
+            <div id="resto-menu-container"></div>
         </main>
 
         <footer class="text-center mt-12 text-gray-500 text-sm">
@@ -170,21 +79,15 @@
         </footer>
     </div>
 
-    <div id="moldeEstado" style="position: absolute; left: -9999px; width: 400px; height: 711px; background-image: url('https://i.postimg.cc/fRF1yD25/plantilla-bar.jpg'); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div id="platosEstado" style="width: 100%; text-align: center; padding: 0 20px; margin-top: -50px;">
-            </div>
-        <div style="position: absolute; bottom: 120px; width: 100%; text-align: center; font-family: 'Caveat', cursive; font-size: 1.3rem; color: #e0e0e0; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
-            * Promoción válida abonando en efectivo
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
-            const menuContainer = document.getElementById('menu-container');
             
-            // Variable global para guardar los platos y usarlos al descargar
-            let globalItems = [];
+            // Reemplazar este link con el link directo de Postimg de tu nueva plantilla
+            const IMAGEN_PLANTILLA_URL = 'https://i.postimg.cc/Px1J9hBV/Whats-App-Image-2026-03-03-at-10-52-45.jpg';
+
+            const menuDiaContainer = document.getElementById('menu-dia-container');
+            const restoMenuContainer = document.getElementById('resto-menu-container');
 
             const CACHE_KEY = 'barEspanol_menuData';
             const CACHE_TIME_KEY = 'barEspanol_menuTimestamp';
@@ -193,8 +96,7 @@
             fetchMenuData();
 
             async function fetchMenuData() {
-                menuContainer.innerHTML = `<p class="text-center text-gray-400">Cargando menú...</p>`;
-                
+                restoMenuContainer.innerHTML = `<p class="text-center text-gray-400">Cargando menú...</p>`;
                 try {
                     const now = new Date().getTime();
                     const cachedData = sessionStorage.getItem(CACHE_KEY);
@@ -202,33 +104,28 @@
 
                     if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < CACHE_DURATION_MS) {
                         const { items, promoText, principalText, segundoText } = JSON.parse(cachedData);
-                        globalItems = items;
                         renderHeaderText(promoText, principalText, segundoText);
                         renderMenu(items);
-                        prepararBotonDescarga(items);
                         return; 
                     }
 
                     const urlConCacheBuster = `${googleSheetURL}&timestamp=${now}`;
                     const response = await fetch(urlConCacheBuster);
-                    if (!response.ok) throw new Error('No se pudo cargar la información del menú.');
+                    if (!response.ok) throw new Error('No se pudo cargar la información.');
                     
                     let csvText = await response.text();
                     csvText = csvText.replace(/^\uFEFF/, '');
                     
                     const { items, promoText, principalText, segundoText } = parseCSV(csvText);
-                    globalItems = items;
                     
                     sessionStorage.setItem(CACHE_KEY, JSON.stringify({ items, promoText, principalText, segundoText }));
                     sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
 
                     renderHeaderText(promoText, principalText, segundoText);
                     renderMenu(items);
-                    prepararBotonDescarga(items);
 
                 } catch (error) {
-                    console.error('Error:', error);
-                    menuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
+                    restoMenuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
                 }
             }
 
@@ -245,28 +142,15 @@
                 const principalIndex = headers.indexOf('principalhome_text');
                 const segundoIndex = headers.indexOf('segundohome_text');
                 
-                if (nameIndex === -1 || priceIndex === -1) {
-                    throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'.`);
-                }
-                
                 const parseCsvLine = (line) => { 
-                    const values = []; 
-                    let current = ''; 
-                    let inQuotes = false; 
+                    const values = []; let current = ''; let inQuotes = false; 
                     for (const char of line) { 
-                        if (char === '"' && !inQuotes) { 
-                            inQuotes = true; 
-                        } else if (char === '"' && inQuotes) { 
-                            inQuotes = false; 
-                        } else if (char === ',' && !inQuotes) { 
-                            values.push(current); 
-                            current = ''; 
-                        } else { 
-                            current += char; 
-                        } 
+                        if (char === '"' && !inQuotes) { inQuotes = true; } 
+                        else if (char === '"' && inQuotes) { inQuotes = false; } 
+                        else if (char === ',' && !inQuotes) { values.push(current); current = ''; } 
+                        else { current += char; } 
                     } 
-                    values.push(current); 
-                    return values.map(v => v.trim()); 
+                    values.push(current); return values.map(v => v.trim()); 
                 };
                 
                 const firstDataLineValues = lines.length > 1 ? parseCsvLine(lines[1]) : [];
@@ -281,10 +165,7 @@
                     const categoria = values[categoryIndex] || 'Varios'; 
                     const descripcion = values[descriptionIndex] || ''; 
                     const publicado = publicadoIndex !== -1 ? values[publicadoIndex]?.toLowerCase() : ''; 
-                    
-                    if (nombre && !isNaN(precio)) { 
-                        return { nombre, precio, categoria, descripcion, publicado_web: publicado }; 
-                    } 
+                    if (nombre && !isNaN(precio)) return { nombre, precio, categoria, descripcion, publicado_web: publicado }; 
                     return null; 
                 }).filter(item => item && item.publicado_web !== 'x');
                 
@@ -294,65 +175,36 @@
             function renderHeaderText(promo, principal, segundo) {
                 const promoContainer = document.getElementById('promo-text-container');
                 const homeContainer = document.getElementById('home-text-container');
-
-                if (promo) {
-                    const formattedPromo = promo.replace(/\|/g, '<br>');
-                    promoContainer.innerHTML = `<div class="header-text">${formattedPromo}</div>`;
-                }
-
+                if (promo) promoContainer.innerHTML = `<div class="header-text">${promo.replace(/\|/g, '<br>')}</div>`;
                 if (principal || segundo) {
                     let htmlContent = '<div class="header-text">';
                     if (principal) {
-                        const parts = principal.split('|');
-                        parts.forEach(part => {
+                        principal.split('|').forEach(part => {
                             const currentPart = part.trim();
-                            const numberMatch = currentPart.match(/(\d{10,})/);
-                            if (numberMatch && currentPart.toLowerCase().includes('whatsapp')) {
-                                const number = numberMatch[0];
-                                const whatsappUrl = `https://wa.me/54${number}`;
-                                const whatsappLink = `<a href="${whatsappUrl}" target="_blank" rel="noopener noreferrer" class="wapp-button">Whatsapp</a>`;
-                                const finalHtml = currentPart.replace(/whatsapp/i, whatsappLink);
-                                htmlContent += `<p class="mb-2">${finalHtml}</p>`;
+                            const match = currentPart.match(/(\d{10,})/);
+                            if (match && currentPart.toLowerCase().includes('whatsapp')) {
+                                htmlContent += `<p class="mb-2">${currentPart.replace(/whatsapp/i, `<a href="https://wa.me/54${match[0]}" target="_blank" class="wapp-button">Whatsapp</a>`)}</p>`;
                             } else {
                                 htmlContent += `<p class="mb-2">${currentPart}</p>`;
                             }
                         });
                     }
                     if (segundo) {
-                        const linksParts = segundo.split('|');
-                        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
                         let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-4 mt-4">';
-                        linksParts.forEach(part => {
-                            const match = part.trim().match(linkRegex);
+                        segundo.split('|').forEach(part => {
+                            const match = part.trim().match(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/);
                             if (match) {
-                                const brandName = match[1].trim();
-                                const url = match[2].trim();
-                                let iconUrl = '';
-                                const brandLower = brandName.toLowerCase();
-                                
-                                if (brandLower.includes('pedido') || brandLower.includes('peya')) {
-                                    iconUrl = 'https://images.seeklogo.com/logo-png/36/1/pedidos-ya-logo-png_seeklogo-369550.png';
-                                } else if (brandLower.includes('rappi')) {
-                                    iconUrl = 'https://static.wikia.nocookie.net/logopedia/images/f/fd/Rappi.png/revision/latest?cb=20200212213348&path-prefix=es';
-                                } else if (brandLower.includes('mercado') || brandLower.includes('mp')) {
-                                    iconUrl = 'https://http2.mlstatic.com/storage/pog-cm-admin/calm-assets/3_C_fondoB--320x208--049529b9--rebrand-mp.webp?refresh=1';
-                                }
-
-                                if (iconUrl) {
-                                    appsHtml += `
-                                        <a href="${url}" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-110">
-                                            <img src="${iconUrl}" alt="${brandName}" referrerpolicy="no-referrer" class="h-10 md:h-12 w-auto object-contain rounded-md shadow-sm bg-white p-1">
-                                        </a>`;
-                                } else {
-                                    appsHtml += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-white underline font-semibold">${brandName}</a>`;
-                                }
+                                const [_, brand, url] = match;
+                                let iconUrl = brand.toLowerCase().includes('peya') ? 'https://images.seeklogo.com/logo-png/36/1/pedidos-ya-logo-png_seeklogo-369550.png' :
+                                              brand.toLowerCase().includes('rappi') ? 'https://static.wikia.nocookie.net/logopedia/images/f/fd/Rappi.png/revision/latest?cb=20200212213348&path-prefix=es' :
+                                              brand.toLowerCase().includes('mp') ? 'https://http2.mlstatic.com/storage/pog-cm-admin/calm-assets/3_C_fondoB--320x208--049529b9--rebrand-mp.webp?refresh=1' : '';
+                                appsHtml += iconUrl ? `<a href="${url}" target="_blank" class="transition-transform hover:scale-110"><img src="${iconUrl}" alt="${brand}" referrerpolicy="no-referrer" class="h-10 md:h-12 w-auto bg-white p-1 rounded-md"></a>` 
+                                                    : `<a href="${url}" target="_blank" class="text-white underline font-semibold">${brand}</a>`;
                             }
                         });
-                        appsHtml += '</div>';
-                        htmlContent += appsHtml;
+                        htmlContent += appsHtml + '</div>';
                     }
-                    htmlContent += '</div>';
-                    homeContainer.innerHTML = htmlContent;
+                    homeContainer.innerHTML = htmlContent + '</div>';
                 }
             }
             
@@ -366,19 +218,19 @@
             }
 
             function renderMenu(items) {
-                menuContainer.innerHTML = '';
+                menuDiaContainer.innerHTML = '';
+                restoMenuContainer.innerHTML = '';
+
                 if (items.length === 0) {
-                    menuContainer.innerHTML = `<p class="text-center text-gray-400">No hay items en el menú para mostrar.</p>`;
+                    restoMenuContainer.innerHTML = `<p class="text-center text-gray-400">No hay items en el menú para mostrar.</p>`;
                     return;
                 }
 
-                // Separar Menú del Día del resto
                 const menuDiaItems = [];
                 const regularItems = [];
 
                 items.forEach(item => {
                     if (item.nombre.includes('*MENU DIA*')) {
-                        // Limpiamos el nombre para que el cliente no lea "*MENU DIA*"
                         item.nombreLimpio = item.nombre.replace('*MENU DIA*', '').trim();
                         menuDiaItems.push(item);
                     } else {
@@ -387,12 +239,78 @@
                     }
                 });
                 
-                // --- RENDERIZAR MENÚ DEL DÍA PRIMERO (Si hay) ---
+                // 1. DIBUJAR LAS PIZARRAS VISUALES EN LA WEB
                 if (menuDiaItems.length > 0) {
-                    crearCategoriaHTML('Menú del Día', menuDiaItems);
+                    const chunks = [];
+                    for (let i = 0; i < menuDiaItems.length; i += 2) chunks.push(menuDiaItems.slice(i, i + 2));
+
+                    chunks.forEach((chunk, index) => {
+                        let platosHtml = '';
+                        chunk.forEach(plato => {
+                            const precio = calcularPrecioMenu(plato.precio);
+                            platosHtml += `
+                                <div class="mb-6 w-full px-2">
+                                    <div class="text-[1.8rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
+                                    <div class="text-[1.6rem] text-[#FFC857] mt-1 font-bold">$${precio.toLocaleString('es-AR')}</div>
+                                </div>
+                            `;
+                        });
+
+                        // La magia: Usar un <img> como fondo arregla el bug negro de html2canvas
+                        menuDiaContainer.innerHTML += `
+                            <div class="relative w-full max-w-[360px] aspect-[9/16] mx-auto rounded-xl overflow-hidden shadow-2xl mb-6 border border-gray-700 tarjeta-pizarra" id="tarjeta-${index}">
+                                <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
+                                
+                                <div class="relative z-10 flex flex-col items-center justify-center w-full h-full pt-[35%] pb-[30%] text-center fuente-tiza">
+                                    ${platosHtml}
+                                </div>
+                                
+                                <div class="absolute bottom-[16%] w-full text-center z-10 px-4">
+                                    <span class="text-[#e0e0e0] text-xl tracking-wide fuente-firma">* Promoción válida abonando en efectivo</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // Botón sutil de descarga
+                    menuDiaContainer.innerHTML += `
+                        <div class="text-center mt-2 mb-10">
+                            <button id="btnDescargarPizarras" class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer flex items-center justify-center mx-auto">
+                                <i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} para estado
+                            </button>
+                        </div>
+                    `;
+
+                    // Lógica para descargar (Ahora saca foto a lo que el usuario está viendo)
+                    document.getElementById('btnDescargarPizarras').addEventListener('click', async () => {
+                        const tarjetas = document.querySelectorAll('.tarjeta-pizarra');
+                        const btn = document.getElementById('btnDescargarPizarras');
+                        btn.innerHTML = '<i class="bi bi-hourglass-split mr-1"></i> Generando...';
+                        btn.disabled = true;
+
+                        for (let i = 0; i < tarjetas.length; i++) {
+                            try {
+                                const canvas = await html2canvas(tarjetas[i], {
+                                    scale: 2, 
+                                    useCORS: true, 
+                                    allowTaint: true,
+                                    backgroundColor: null 
+                                });
+                                const link = document.createElement('a');
+                                link.download = `Menu_Dia_${i + 1}.jpg`;
+                                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                                link.click();
+                                await new Promise(r => setTimeout(r, 600)); 
+                            } catch (e) {
+                                alert("Error al capturar la imagen. Intentá nuevamente.");
+                            }
+                        }
+                        btn.innerHTML = `<i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} para estado`;
+                        btn.disabled = false;
+                    });
                 }
 
-                // --- RENDERIZAR EL RESTO DE CATEGORÍAS ---
+                // 2. DIBUJAR EL RESTO DEL MENÚ
                 const itemsByCategory = regularItems.reduce((acc, item) => {
                     if (!acc[item.categoria]) acc[item.categoria] = [];
                     acc[item.categoria].push(item);
@@ -400,118 +318,29 @@
                 }, {});
 
                 Object.keys(itemsByCategory).sort((a, b) => itemsByCategory[b].length - itemsByCategory[a].length).forEach(category => {
-                    crearCategoriaHTML(category, itemsByCategory[category]);
-                });
-            }
-
-            function crearCategoriaHTML(categoryTitleText, itemsArray) {
-                const categoryHeader = document.createElement('div');
-                categoryHeader.className = 'category-separator';
-                const categoryTitle = document.createElement('span');
-                categoryTitle.className = 'category-title';
-                categoryTitle.textContent = categoryTitleText;
-                
-                // Si es Menú del Día, le ponemos un color especial
-                if(categoryTitleText === 'Menú del Día') categoryTitle.style.color = '#fff';
-
-                categoryHeader.appendChild(categoryTitle);
-                menuContainer.appendChild(categoryHeader);
-                
-                const categoryContainer = document.createElement('div');
-                categoryContainer.className = 'bg-gray-900 bg-opacity-50 rounded-lg shadow-lg mb-6';
-                menuContainer.appendChild(categoryContainer);
-
-                itemsArray.forEach(item => {
-                    const precioMenu = calcularPrecioMenu(item.precio);
-                    const itemElement = document.createElement('div');
-                    itemElement.className = 'menu-item p-4 flex justify-between items-start';
-                    itemElement.innerHTML = `
-                        <div>
-                            <h3 class="text-lg font-semibold text-white">${item.nombreLimpio}</h3>
-                            ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
-                        </div>
-                        <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
-                    `;
-                    categoryContainer.appendChild(itemElement);
-                });
-            }
-
-            // --- LÓGICA DE CAPTURA DE ESTADOS DE WHATSAPP ---
-            function prepararBotonDescarga(items) {
-                const platosMenuDia = items.filter(plato => plato.nombre.includes('*MENU DIA*'));
-                const btnContainer = document.getElementById('descargarEstadosBtnContainer');
-                
-                // Si hay platos del día, mostramos el botón
-                if (platosMenuDia.length > 0) {
-                    btnContainer.style.display = 'block';
-                } else {
-                    btnContainer.style.display = 'none';
-                }
-            }
-
-            document.getElementById('btnDescargarEstados').addEventListener('click', async () => {
-                const platosMenuDia = globalItems.filter(plato => plato.nombre.includes('*MENU DIA*'));
-                
-                if (platosMenuDia.length === 0) return;
-
-                // Dividir en grupos de 2 (Chunking)
-                const gruposDePlatos = [];
-                for (let i = 0; i < platosMenuDia.length; i += 2) {
-                    gruposDePlatos.push(platosMenuDia.slice(i, i + 2));
-                }
-
-                const molde = document.getElementById('moldeEstado');
-                const contenedorPlatos = document.getElementById('platosEstado');
-                const btn = document.getElementById('btnDescargarEstados');
-                
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = 'Generando imágenes... ⏳';
-                btn.disabled = true;
-
-                for (let i = 0; i < gruposDePlatos.length; i++) {
-                    const grupo = gruposDePlatos[i];
-                    contenedorPlatos.innerHTML = ''; // Limpiamos la pizarra
+                    const header = document.createElement('div');
+                    header.className = 'category-separator';
+                    header.innerHTML = `<span class="category-title">${category}</span>`;
+                    restoMenuContainer.appendChild(header);
                     
-                    grupo.forEach(plato => {
-                        const nombreLimpio = plato.nombre.replace('*MENU DIA*', '').trim();
-                        // El precio que mostramos en la placa es el final (con recargo) tal cual pidió el cliente
-                        const precioMenu = calcularPrecioMenu(plato.precio); 
-                        
-                        contenedorPlatos.innerHTML += `
-                            <div style="margin-bottom: 30px; font-family: 'Kalam', cursive; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
-                                <div style="font-size: 2.2rem; line-height: 1.1;">${nombreLimpio}</div>
-                                <div style="font-size: 1.8rem; color: #FFC857;">$${precioMenu.toLocaleString('es-AR')}</div>
+                    const catContainer = document.createElement('div');
+                    catContainer.className = 'bg-gray-900 bg-opacity-50 rounded-lg shadow-lg mb-6';
+                    restoMenuContainer.appendChild(catContainer);
+
+                    itemsByCategory[category].forEach(item => {
+                        const precioMenu = calcularPrecioMenu(item.precio);
+                        catContainer.innerHTML += `
+                            <div class="menu-item p-4 flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-white">${item.nombreLimpio}</h3>
+                                    ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
+                                </div>
+                                <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
                             </div>
                         `;
                     });
-
-                    // Le damos un momento al navegador para que dibuje las letras
-                    await new Promise(resolve => setTimeout(resolve, 300));
-
-                    try {
-                        const canvas = await html2canvas(molde, {
-                            scale: 2, // Mejora la calidad de la foto
-                            useCORS: true, // Permite cargar la imagen de postimg
-                            backgroundColor: null
-                        });
-
-                        const link = document.createElement('a');
-                        link.download = `Menu_del_Dia_BarEspanol_${i + 1}.jpg`;
-                        link.href = canvas.toDataURL('image/jpeg', 0.9);
-                        link.click();
-                        
-                        // Esperamos un segundito entre descargas si hay más de una foto
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        
-                    } catch (error) {
-                        console.error("Error al generar la imagen:", error);
-                        alert("Hubo un problema al generar la imagen. Intentá desde otro dispositivo o navegador.");
-                    }
-                }
-                
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            });
+                });
+            }
         });
     </script>
 </body>
