@@ -33,8 +33,8 @@
         .header-logo { height: 140px; margin-bottom: 0.5rem; border-radius: 16px; }
         .main-title { font-family: 'Playfair Display', serif; font-size: 2.25rem; font-weight: 700; color: #ffffff; letter-spacing: 0.1em; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
         .header-subtitle { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 400; color: var(--text-color); letter-spacing: 0.05em; margin-top: -0.25rem; }
-        .menu-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .hoy-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; color: var(--primary-accent); text-align: center; margin-bottom: 1.5rem; }
+        .menu-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 1rem; margin-bottom: 1.5rem; }
+        .hoy-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; color: var(--primary-accent); text-align: center; margin-bottom: 1.2rem; }
         .category-separator { text-align: center; margin-top: 2.5rem; margin-bottom: 1.5rem; }
         .category-separator::after { content: ''; display: block; width: 150px; height: 20px; margin: 0.5rem auto 0; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="%23FFC857" stroke-width="1" fill="none" /></svg>'); background-repeat: no-repeat; background-position: center; }
         .category-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); }
@@ -74,9 +74,9 @@
                 </button>
             </div>
             
-            <div id="promo-text-container" class="mb-8 mt-2 text-gray-300"></div>
-            
             <h2 id="titulo-menu-resto" class="menu-title" style="display: none;">Menú</h2>
+
+            <div id="promo-text-container" class="mb-8 mt-2 text-gray-300 px-2 w-full"></div>
             
             <div id="resto-menu-container"></div>
         </main>
@@ -190,7 +190,16 @@
             function renderHeaderText(promo, principal, segundo) {
                 const promoContainer = document.getElementById('promo-text-container');
                 const homeContainer = document.getElementById('home-text-container');
-                if (promo) promoContainer.innerHTML = `<div class="header-text">${promo.replace(/\|/g, '<br>')}</div>`;
+                
+                if (promo) {
+                    // Fuerza el texto solicitado eliminando la parte del plato del dia
+                    let textoFinalPromo = promo;
+                    if(textoFinalPromo.includes('Plato especial')) {
+                        textoFinalPromo = "Precios de lista. Todos los medios de pago 💳|10% de Descuento abonando en EFECTIVO 💸";
+                    }
+                    promoContainer.innerHTML = `<div class="header-text">${textoFinalPromo.replace(/\|/g, '<br>')}</div>`;
+                }
+
                 if (principal || segundo) {
                     let htmlContent = '<div class="header-text">';
                     if (principal) {
@@ -204,17 +213,27 @@
                             }
                         });
                     }
+                    
+                    // SOLUCION UI PARA LAS APPS DE DELIVERY (Pills CSS en lugar de imágenes rotas)
                     if (segundo) {
-                        let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-4 mt-4">';
+                        let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-3 mt-4">';
                         segundo.split('|').forEach(part => {
                             const match = part.trim().match(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/);
                             if (match) {
                                 const [_, brand, url] = match;
-                                let iconUrl = brand.toLowerCase().includes('peya') ? 'https://images.seeklogo.com/logo-png/36/1/pedidos-ya-logo-png_seeklogo-369550.png' :
-                                              brand.toLowerCase().includes('rappi') ? 'https://static.wikia.nocookie.net/logopedia/images/f/fd/Rappi.png/revision/latest?cb=20200212213348&path-prefix=es' :
-                                              brand.toLowerCase().includes('mp') ? 'https://http2.mlstatic.com/storage/pog-cm-admin/calm-assets/3_C_fondoB--320x208--049529b9--rebrand-mp.webp?refresh=1' : '';
-                                appsHtml += iconUrl ? `<a href="${url}" target="_blank" class="transition-transform hover:scale-110"><img src="${iconUrl}" alt="${brand}" referrerpolicy="no-referrer" class="h-10 md:h-12 w-auto bg-white p-1 rounded-md"></a>` 
-                                                    : `<a href="${url}" target="_blank" class="text-white underline font-semibold">${brand}</a>`;
+                                const brandLower = brand.toLowerCase();
+                                
+                                // Definimos colores oficiales de las marcas
+                                let bgColor = 'bg-gray-700'; 
+                                if (brandLower.includes('peya') || brandLower.includes('pedido')) {
+                                    bgColor = 'bg-[#EA044E]'; // Rojo PedidosYa
+                                } else if (brandLower.includes('rappi')) {
+                                    bgColor = 'bg-[#FF441F]'; // Naranja Rappi
+                                } else if (brandLower.includes('mp') || brandLower.includes('mercado')) {
+                                    bgColor = 'bg-[#009EE3]'; // Celeste MercadoPago
+                                }
+
+                                appsHtml += `<a href="${url}" target="_blank" class="${bgColor} text-white font-bold py-2 px-5 rounded-full shadow-lg transition-transform hover:scale-105 text-[0.9rem] tracking-wide">${brand}</a>`;
                             }
                         });
                         htmlContent += appsHtml + '</div>';
@@ -258,7 +277,7 @@
                     }
                 });
                 
-                // --- 1. DIBUJAR LAS PIZARRAS (VISTA WEB EN GRILLA Y VISTA COMPLETA OCULTA) ---
+                // --- 1. DIBUJAR LAS PIZARRAS (VISTA WEB EN GRILLA COMPACTA) ---
                 if (menuDiaItems.length > 0) {
                     tituloHoy.style.display = 'block'; 
                     contenedorDescargaGlobal.style.display = 'block'; 
@@ -273,15 +292,15 @@
                         chunk.forEach(plato => {
                             const precio = calcularPrecioMenu(plato.precio);
                             
-                            // HTML para la tarjetita compacta de la web
+                            // HTML TARJETA WEB (Textos más chicos para que no desborde)
                             platosHtmlWeb += `
-                                <div class="mb-3 w-full px-1">
-                                    <div class="text-[1.05rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
+                                <div class="mb-2 w-full px-1">
+                                    <div class="text-[1.1rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
                                     <div class="text-[1.1rem] text-[#FFC857] mt-0.5 font-bold">$${precio.toLocaleString('es-AR')}</div>
                                 </div>
                             `;
                             
-                            // HTML para la plantilla gigante oculta (para el estado de WhatsApp)
+                            // HTML TARJETA DESCARGA GIGANTE
                             platosHtmlDescarga += `
                                 <div class="mb-6 w-full px-2">
                                     <div class="text-[2.2rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
@@ -290,20 +309,20 @@
                             `;
                         });
 
-                        // 1.A - LA CAJITA RECORTADA QUE VE EL USUARIO EN LA WEB (En grid)
+                        // 1.A - CAJITA RECORTADA WEB (Fondo zoom 350% para que no se vea el texto impreso en la foto)
                         menuDiaContainer.innerHTML += `
-                            <div class="w-full aspect-[4/5] rounded-xl shadow-lg border border-gray-700 relative flex flex-col items-center justify-between p-3 text-center fuente-tiza overflow-hidden" style="background-image: url('${IMAGEN_PLANTILLA_URL}'); background-size: cover; background-position: center;">
-                                <div class="absolute inset-0 bg-black bg-opacity-40 rounded-xl z-0"></div> <div class="relative z-10 w-full flex flex-col items-center justify-center flex-grow mt-2">
+                            <div class="w-full min-h-[140px] rounded-xl shadow-lg border border-gray-700 relative flex flex-col items-center justify-center p-2 text-center fuente-tiza overflow-hidden" style="background-image: url('${IMAGEN_PLANTILLA_URL}'); background-size: 350%; background-position: center;">
+                                <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl z-0"></div> <div class="relative z-10 w-full flex flex-col items-center justify-center flex-grow">
                                     ${platosHtmlWeb}
                                 </div>
                                 
-                                <div class="relative z-10 w-full mb-1">
-                                    <span class="text-gray-300 text-[0.7rem] tracking-wide fuente-firma">precio efectivo</span>
+                                <div class="relative z-10 w-full mt-1">
+                                    <span class="text-gray-300 text-[0.65rem] tracking-wide fuente-firma">precio efectivo</span>
                                 </div>
                             </div>
                         `;
 
-                        // 1.B - LA PLANTILLA GIGANTE OCULTA (Para descargar)
+                        // 1.B - PLANTILLA GIGANTE OCULTA (Para descargar)
                         plantillasOcultas.innerHTML += `
                             <div class="relative w-[400px] h-[711px] tarjeta-oculta" id="tarjeta-oculta-${index}">
                                 <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
@@ -319,10 +338,9 @@
                         `;
                     });
 
-                    // Lógica para descargar todas con un solo botón
+                    // Lógica para descargar todas con UN solo botón
                     const btnDescargarPizarras = document.getElementById('btnDescargarPizarras');
                     if(btnDescargarPizarras) {
-                        // Limpiamos listeners previos clonando el nodo para evitar múltiples descargas si se recarga el fetch
                         const nuevoBtn = btnDescargarPizarras.cloneNode(true);
                         btnDescargarPizarras.parentNode.replaceChild(nuevoBtn, btnDescargarPizarras);
                         
@@ -355,9 +373,9 @@
                     }
                 }
 
-                // --- 2. DIBUJAR EL RESTO DEL MENÚ ---
+                // --- 2. DIBUJAR EL RESTO DEL MENÚ TRADICIONAL ---
                 if (regularItems.length > 0) {
-                    tituloMenuResto.style.display = 'block'; // Mostramos "Menú"
+                    tituloMenuResto.style.display = 'block'; 
                     
                     const itemsByCategory = regularItems.reduce((acc, item) => {
                         if (!acc[item.categoria]) acc[item.categoria] = [];
