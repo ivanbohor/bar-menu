@@ -65,7 +65,7 @@
         <div id="promo-text-container" class="mb-8 text-gray-300"></div>
 
         <main id="menu-container">
-            <div id="menu-dia-container" class="w-full mb-8"></div>
+            <div id="menu-dia-container" class="w-full flex flex-row flex-wrap justify-center gap-4 mb-8"></div>
             
             <div id="resto-menu-container"></div>
         </main>
@@ -84,7 +84,7 @@
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             
             // Reemplazar este link con el link directo de Postimg de tu nueva plantilla
-            const IMAGEN_PLANTILLA_URL = 'https://i.postimg.cc/Px1J9hBV/Whats-App-Image-2026-03-03-at-10-52-45.jpg';
+            const IMAGEN_PLANTILLA_URL = 'https://i.postimg.cc/Px1J9hBV/Whats-App-Image-2026-03-03-at-10-52-45.jpg'; 
 
             const menuDiaContainer = document.getElementById('menu-dia-container');
             const restoMenuContainer = document.getElementById('resto-menu-container');
@@ -239,7 +239,7 @@
                     }
                 });
                 
-                // 1. DIBUJAR LAS PIZARRAS VISUALES EN LA WEB
+                // --- 1. DIBUJAR LAS PIZARRAS VISUALES EN LA WEB CON ZOOM Y RECORTE ---
                 if (menuDiaItems.length > 0) {
                     const chunks = [];
                     for (let i = 0; i < menuDiaItems.length; i += 2) chunks.push(menuDiaItems.slice(i, i + 2));
@@ -256,32 +256,71 @@
                             `;
                         });
 
-                        // La magia: Usar un <img> como fondo arregla el bug negro de html2canvas
+                        // --- Wrapper de Recorte (Muestra la pizarra más chica y cortada) ---
+                        // max-w-[270px] es el ancho reducido (~25% más chicas que 360px). h-[450px] es la altura visible de recorte.
                         menuDiaContainer.innerHTML += `
-                            <div class="relative w-full max-w-[360px] aspect-[9/16] mx-auto rounded-xl overflow-hidden shadow-2xl mb-6 border border-gray-700 tarjeta-pizarra" id="tarjeta-${index}">
-                                <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
+                            <div class="tarjeta-menu-dia-vista-web w-full max-w-[270px] h-[450px] overflow-hidden rounded-xl shadow-lg mb-6 border border-gray-700 relative flex justify-center items-start">
                                 
-                                <div class="relative z-10 flex flex-col items-center justify-center w-full h-full pt-[35%] pb-[30%] text-center fuente-tiza">
-                                    ${platosHtml}
+                                <div class="relative w-full aspect-[9/16] tarjeta-pizarra top-[-150px]" id="tarjeta-${index}">
+                                    <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
+                                    
+                                    <div class="relative z-10 flex flex-col items-center justify-center w-full h-full pt-[35%] pb-[30%] text-center fuente-tiza">
+                                        ${platosHtml}
+                                    </div>
+                                    
+                                    <div class="absolute bottom-[16%] w-full text-center z-10 px-4">
+                                        <span class="text-[#e0e0e0] text-xl tracking-wide fuente-firma">* Promoción válida abonando en efectivo</span>
+                                    </div>
                                 </div>
-                                
-                                <div class="absolute bottom-[16%] w-full text-center z-10 px-4">
-                                    <span class="text-[#e0e0e0] text-xl tracking-wide fuente-firma">* Promoción válida abonando en efectivo</span>
+
+                                <div class="text-center mt-2 w-full absolute bottom-[-10px]">
+                                    <button id="btnDescargarPizarra-${index}" class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer flex items-center justify-center mx-auto descargas-pizarra" data-target="tarjeta-${index}">
+                                        <i class="bi bi-download mr-1"></i> Descargar pizarra completa
+                                    </button>
                                 </div>
                             </div>
                         `;
                     });
 
-                    // Botón sutil de descarga
+                    // Botón global opcional (borrar si prefieren solo los botones individuales)
                     menuDiaContainer.innerHTML += `
-                        <div class="text-center mt-2 mb-10">
+                        <div class="text-center mt-2 mb-10 w-full">
                             <button id="btnDescargarPizarras" class="text-sm text-gray-400 font-semibold underline hover:text-white transition-colors cursor-pointer flex items-center justify-center mx-auto">
-                                <i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} para estado
+                                <i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} completa${chunks.length > 1 ? 's' : ''} para estado
                             </button>
                         </div>
                     `;
 
-                    // Lógica para descargar (Ahora saca foto a lo que el usuario está viendo)
+                    // Lógica para descargar tarjetas individuales
+                    document.querySelectorAll('.descargas-pizarra').forEach(button => {
+                        button.addEventListener('click', async (e) => {
+                            const targetId = e.currentTarget.getAttribute('data-target');
+                            const tarjetaCompleta = document.getElementById(targetId);
+                            const btn = e.currentTarget;
+                            const originalText = btn.innerHTML;
+                            btn.innerHTML = '<i class="bi bi-hourglass-split mr-1"></i> Generando...';
+                            btn.disabled = true;
+
+                            try {
+                                const canvas = await html2canvas(tarjetaCompleta, {
+                                    scale: 2, 
+                                    useCORS: true, 
+                                    allowTaint: true,
+                                    backgroundColor: null 
+                                });
+                                const link = document.createElement('a');
+                                link.download = `Menu_Dia_Completo.jpg`;
+                                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                                link.click();
+                            } catch (error) {
+                                alert("Error al capturar la imagen completa. Intentá nuevamente.");
+                            }
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        });
+                    });
+
+                    // Lógica para descargar todas (Ahora saca foto a lo que el usuario está viendo)
                     document.getElementById('btnDescargarPizarras').addEventListener('click', async () => {
                         const tarjetas = document.querySelectorAll('.tarjeta-pizarra');
                         const btn = document.getElementById('btnDescargarPizarras');
@@ -297,7 +336,7 @@
                                     backgroundColor: null 
                                 });
                                 const link = document.createElement('a');
-                                link.download = `Menu_Dia_${i + 1}.jpg`;
+                                link.download = `Menu_Dia_Completo_${i + 1}.jpg`;
                                 link.href = canvas.toDataURL('image/jpeg', 0.9);
                                 link.click();
                                 await new Promise(r => setTimeout(r, 600)); 
@@ -305,12 +344,12 @@
                                 alert("Error al capturar la imagen. Intentá nuevamente.");
                             }
                         }
-                        btn.innerHTML = `<i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} para estado`;
+                        btn.innerHTML = `<i class="bi bi-download mr-1"></i> Descargar pizarra${chunks.length > 1 ? 's' : ''} completa${chunks.length > 1 ? 's' : ''} para estado`;
                         btn.disabled = false;
                     });
                 }
 
-                // 2. DIBUJAR EL RESTO DEL MENÚ
+                // --- 2. DIBUJAR EL RESTO DEL MENÚ EN LISTA TRADICIONAL ---
                 const itemsByCategory = regularItems.reduce((acc, item) => {
                     if (!acc[item.categoria]) acc[item.categoria] = [];
                     acc[item.categoria].push(item);
