@@ -95,7 +95,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
+            
+            // --- TUS IMÁGENES ALOJADAS EN POSTIMG ---
             const IMAGEN_PLANTILLA_URL = 'https://i.postimg.cc/Px1J9hBV/Whats-App-Image-2026-03-03-at-10-52-45.jpg'; 
+            
+            // Links oficiales subidos por vos:
+            const ICONO_PEDIDOSYA = 'https://i.postimg.cc/httdFbYg/pedidos-ya-logo-png-seeklogo-369550.png';
+            const ICONO_RAPPI = 'https://i.postimg.cc/FRMyNdLR/images.png';         
+            const ICONO_MERCADOPAGO = 'https://i.postimg.cc/Qx569s80/merca-rand-mp.webp'; 
 
             const menuDiaContainer = document.getElementById('menu-dia-container');
             const restoMenuContainer = document.getElementById('resto-menu-container');
@@ -192,7 +199,7 @@
                 const homeContainer = document.getElementById('home-text-container');
                 
                 if (promo) {
-                    // Fuerza el texto solicitado eliminando la parte del plato del dia
+                    // Quitamos la frase del "chanchito" tal como pediste
                     let textoFinalPromo = promo;
                     if(textoFinalPromo.includes('Plato especial')) {
                         textoFinalPromo = "Precios de lista. Todos los medios de pago 💳|10% de Descuento abonando en EFECTIVO 💸";
@@ -214,26 +221,32 @@
                         });
                     }
                     
-                    // SOLUCION UI PARA LAS APPS DE DELIVERY (Pills CSS en lugar de imágenes rotas)
+                    // ICONOS DE DELIVERY (Usando tus variables de Postimg)
                     if (segundo) {
-                        let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-3 mt-4">';
+                        let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-4 mt-4">';
                         segundo.split('|').forEach(part => {
                             const match = part.trim().match(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/);
                             if (match) {
                                 const [_, brand, url] = match;
                                 const brandLower = brand.toLowerCase();
                                 
-                                // Definimos colores oficiales de las marcas
-                                let bgColor = 'bg-gray-700'; 
+                                let iconUrl = '';
                                 if (brandLower.includes('peya') || brandLower.includes('pedido')) {
-                                    bgColor = 'bg-[#EA044E]'; // Rojo PedidosYa
+                                    iconUrl = ICONO_PEDIDOSYA;
                                 } else if (brandLower.includes('rappi')) {
-                                    bgColor = 'bg-[#FF441F]'; // Naranja Rappi
+                                    iconUrl = ICONO_RAPPI;
                                 } else if (brandLower.includes('mp') || brandLower.includes('mercado')) {
-                                    bgColor = 'bg-[#009EE3]'; // Celeste MercadoPago
+                                    iconUrl = ICONO_MERCADOPAGO;
                                 }
 
-                                appsHtml += `<a href="${url}" target="_blank" class="${bgColor} text-white font-bold py-2 px-5 rounded-full shadow-lg transition-transform hover:scale-105 text-[0.9rem] tracking-wide">${brand}</a>`;
+                                if (iconUrl) {
+                                    appsHtml += `
+                                        <a href="${url}" target="_blank" class="transition-transform hover:scale-110">
+                                            <img src="${iconUrl}" alt="${brand}" class="h-10 md:h-12 w-auto object-contain rounded-md shadow-sm bg-white p-1">
+                                        </a>`;
+                                } else {
+                                    appsHtml += `<a href="${url}" target="_blank" class="text-white underline font-semibold">${brand}</a>`;
+                                }
                             }
                         });
                         htmlContent += appsHtml + '</div>';
@@ -277,7 +290,7 @@
                     }
                 });
                 
-                // --- 1. DIBUJAR LAS PIZARRAS (VISTA WEB EN GRILLA COMPACTA) ---
+                // --- 1. DIBUJAR LAS PIZARRAS ---
                 if (menuDiaItems.length > 0) {
                     tituloHoy.style.display = 'block'; 
                     contenedorDescargaGlobal.style.display = 'block'; 
@@ -292,7 +305,6 @@
                         chunk.forEach(plato => {
                             const precio = calcularPrecioMenu(plato.precio);
                             
-                            // HTML TARJETA WEB (Textos más chicos para que no desborde)
                             platosHtmlWeb += `
                                 <div class="mb-2 w-full px-1">
                                     <div class="text-[1.1rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
@@ -300,7 +312,6 @@
                                 </div>
                             `;
                             
-                            // HTML TARJETA DESCARGA GIGANTE
                             platosHtmlDescarga += `
                                 <div class="mb-6 w-full px-2">
                                     <div class="text-[2.2rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
@@ -309,28 +320,24 @@
                             `;
                         });
 
-                        // 1.A - CAJITA RECORTADA WEB (Fondo zoom 350% para que no se vea el texto impreso en la foto)
                         menuDiaContainer.innerHTML += `
                             <div class="w-full min-h-[140px] rounded-xl shadow-lg border border-gray-700 relative flex flex-col items-center justify-center p-2 text-center fuente-tiza overflow-hidden" style="background-image: url('${IMAGEN_PLANTILLA_URL}'); background-size: 350%; background-position: center;">
-                                <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl z-0"></div> <div class="relative z-10 w-full flex flex-col items-center justify-center flex-grow">
+                                <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl z-0"></div> 
+                                <div class="relative z-10 w-full flex flex-col items-center justify-center flex-grow">
                                     ${platosHtmlWeb}
                                 </div>
-                                
                                 <div class="relative z-10 w-full mt-1">
                                     <span class="text-gray-300 text-[0.65rem] tracking-wide fuente-firma">precio efectivo</span>
                                 </div>
                             </div>
                         `;
 
-                        // 1.B - PLANTILLA GIGANTE OCULTA (Para descargar)
                         plantillasOcultas.innerHTML += `
                             <div class="relative w-[400px] h-[711px] tarjeta-oculta" id="tarjeta-oculta-${index}">
                                 <img src="${IMAGEN_PLANTILLA_URL}" crossorigin="anonymous" class="absolute inset-0 w-full h-full object-cover z-0">
-                                
                                 <div class="relative z-10 flex flex-col items-center justify-center w-full h-full pt-[35%] pb-[30%] text-center fuente-tiza">
                                     ${platosHtmlDescarga}
                                 </div>
-                                
                                 <div class="absolute bottom-[16%] w-full text-center z-10 px-4">
                                     <span class="text-[#e0e0e0] text-xl tracking-wide fuente-firma">* Promoción válida abonando en efectivo</span>
                                 </div>
@@ -338,7 +345,6 @@
                         `;
                     });
 
-                    // Lógica para descargar todas con UN solo botón
                     const btnDescargarPizarras = document.getElementById('btnDescargarPizarras');
                     if(btnDescargarPizarras) {
                         const nuevoBtn = btnDescargarPizarras.cloneNode(true);
@@ -373,7 +379,7 @@
                     }
                 }
 
-                // --- 2. DIBUJAR EL RESTO DEL MENÚ TRADICIONAL ---
+                // --- 2. DIBUJAR EL RESTO DEL MENÚ ---
                 if (regularItems.length > 0) {
                     tituloMenuResto.style.display = 'block'; 
                     
