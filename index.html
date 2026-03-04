@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Kalam:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         :root {
@@ -141,26 +144,47 @@
             <div id="home-text-container" class="mt-4 text-gray-300"></div>
         </header>
 
-        <h2 class="menu-title">Menu</h2>
+        <h2 class="menu-title">Menú</h2>
         
         <div id="promo-text-container" class="mb-8 text-gray-300"></div>
 
+        <div id="descargarEstadosBtnContainer" class="text-center my-4" style="display: none;">
+            <button id="btnDescargarEstados" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded-lg shadow-lg flex items-center justify-center mx-auto transition-transform hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-download mr-2" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                Generar Imágenes para WhatsApp
+            </button>
+        </div>
+
         <main id="menu-container">
-            </main>
+        </main>
 
         <footer class="text-center mt-12 text-gray-500 text-sm">
             <p class="text-xs text-white mb-2">
                 Hecho por Vanto. ¿Queres tambien un menu editable/QR para tu comercio? 
                 <a href="https://wa.me/541123920404?text=Hola,%20me%20interesa%20un%20menu%20QR" target="_blank" rel="noopener noreferrer" class="footer-link">Hablemos</a>
             </p>
-            <p>© 2025 Bar español. Todos los derechos reservados.</p>
+            <p>© 2026 Bar español. Todos los derechos reservados.</p>
         </footer>
+    </div>
+
+    <div id="moldeEstado" style="position: absolute; left: -9999px; width: 400px; height: 711px; background-image: url('https://i.postimg.cc/fRF1yD25/plantilla-bar.jpg'); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div id="platosEstado" style="width: 100%; text-align: center; padding: 0 20px; margin-top: -50px;">
+            </div>
+        <div style="position: absolute; bottom: 120px; width: 100%; text-align: center; font-family: 'Caveat', cursive; font-size: 1.3rem; color: #e0e0e0; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+            * Promoción válida abonando en efectivo
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMWnEuTjdtdA0g2eXvOPJu5AzgbTnbnrkimQlN_BrnT3dmu5ze1Oz-cuCaEp2GfdSNPqVbxrG8AYUz/pub?output=csv';
             const menuContainer = document.getElementById('menu-container');
+            
+            // Variable global para guardar los platos y usarlos al descargar
+            let globalItems = [];
 
             const CACHE_KEY = 'barEspanol_menuData';
             const CACHE_TIME_KEY = 'barEspanol_menuTimestamp';
@@ -178,8 +202,10 @@
 
                     if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < CACHE_DURATION_MS) {
                         const { items, promoText, principalText, segundoText } = JSON.parse(cachedData);
+                        globalItems = items;
                         renderHeaderText(promoText, principalText, segundoText);
                         renderMenu(items);
+                        prepararBotonDescarga(items);
                         return; 
                     }
 
@@ -191,12 +217,14 @@
                     csvText = csvText.replace(/^\uFEFF/, '');
                     
                     const { items, promoText, principalText, segundoText } = parseCSV(csvText);
+                    globalItems = items;
                     
                     sessionStorage.setItem(CACHE_KEY, JSON.stringify({ items, promoText, principalText, segundoText }));
                     sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
 
                     renderHeaderText(promoText, principalText, segundoText);
                     renderMenu(items);
+                    prepararBotonDescarga(items);
 
                 } catch (error) {
                     console.error('Error:', error);
@@ -218,7 +246,7 @@
                 const segundoIndex = headers.indexOf('segundohome_text');
                 
                 if (nameIndex === -1 || priceIndex === -1) {
-                    throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'. Verifica los encabezados en tu Google Sheet.`);
+                    throw new Error(`Error: No se encontraron las columnas 'nombre' y/o 'precio'.`);
                 }
                 
                 const parseCsvLine = (line) => { 
@@ -274,13 +302,11 @@
 
                 if (principal || segundo) {
                     let htmlContent = '<div class="header-text">';
-
                     if (principal) {
                         const parts = principal.split('|');
                         parts.forEach(part => {
                             const currentPart = part.trim();
                             const numberMatch = currentPart.match(/(\d{10,})/);
-
                             if (numberMatch && currentPart.toLowerCase().includes('whatsapp')) {
                                 const number = numberMatch[0];
                                 const whatsappUrl = `https://wa.me/54${number}`;
@@ -292,22 +318,18 @@
                             }
                         });
                     }
-
                     if (segundo) {
                         const linksParts = segundo.split('|');
                         const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
                         let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-4 mt-4">';
-
                         linksParts.forEach(part => {
                             const match = part.trim().match(linkRegex);
                             if (match) {
                                 const brandName = match[1].trim();
                                 const url = match[2].trim();
-                                
                                 let iconUrl = '';
                                 const brandLower = brandName.toLowerCase();
                                 
-                                // TUS LINKS EXACTOS
                                 if (brandLower.includes('pedido') || brandLower.includes('peya')) {
                                     iconUrl = 'https://images.seeklogo.com/logo-png/36/1/pedidos-ya-logo-png_seeklogo-369550.png';
                                 } else if (brandLower.includes('rappi')) {
@@ -317,7 +339,6 @@
                                 }
 
                                 if (iconUrl) {
-                                    // Agregado referrerpolicy="no-referrer" para saltar el bloqueo
                                     appsHtml += `
                                         <a href="${url}" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-110">
                                             <img src="${iconUrl}" alt="${brandName}" referrerpolicy="no-referrer" class="h-10 md:h-12 w-auto object-contain rounded-md shadow-sm bg-white p-1">
@@ -327,11 +348,9 @@
                                 }
                             }
                         });
-                        
                         appsHtml += '</div>';
                         htmlContent += appsHtml;
                     }
-
                     htmlContent += '</div>';
                     homeContainer.innerHTML = htmlContent;
                 }
@@ -352,42 +371,147 @@
                     menuContainer.innerHTML = `<p class="text-center text-gray-400">No hay items en el menú para mostrar.</p>`;
                     return;
                 }
+
+                // Separar Menú del Día del resto
+                const menuDiaItems = [];
+                const regularItems = [];
+
+                items.forEach(item => {
+                    if (item.nombre.includes('*MENU DIA*')) {
+                        // Limpiamos el nombre para que el cliente no lea "*MENU DIA*"
+                        item.nombreLimpio = item.nombre.replace('*MENU DIA*', '').trim();
+                        menuDiaItems.push(item);
+                    } else {
+                        item.nombreLimpio = item.nombre;
+                        regularItems.push(item);
+                    }
+                });
                 
-                const itemsByCategory = items.reduce((acc, item) => {
+                // --- RENDERIZAR MENÚ DEL DÍA PRIMERO (Si hay) ---
+                if (menuDiaItems.length > 0) {
+                    crearCategoriaHTML('Menú del Día', menuDiaItems);
+                }
+
+                // --- RENDERIZAR EL RESTO DE CATEGORÍAS ---
+                const itemsByCategory = regularItems.reduce((acc, item) => {
                     if (!acc[item.categoria]) acc[item.categoria] = [];
                     acc[item.categoria].push(item);
                     return acc;
                 }, {});
 
                 Object.keys(itemsByCategory).sort((a, b) => itemsByCategory[b].length - itemsByCategory[a].length).forEach(category => {
-                    const categoryHeader = document.createElement('div');
-                    categoryHeader.className = 'category-separator';
-                    const categoryTitle = document.createElement('span');
-                    categoryTitle.className = 'category-title';
-                    categoryTitle.textContent = category;
-                    categoryHeader.appendChild(categoryTitle);
-                    menuContainer.appendChild(categoryHeader);
-                    
-                    const categoryContainer = document.createElement('div');
-                    categoryContainer.className = 'bg-gray-900 bg-opacity-50 rounded-lg shadow-lg';
-                    menuContainer.appendChild(categoryContainer);
-
-                    itemsByCategory[category].forEach(item => {
-                        const precioMenu = calcularPrecioMenu(item.precio);
-                        
-                        const itemElement = document.createElement('div');
-                        itemElement.className = 'menu-item p-4 flex justify-between items-start';
-                        itemElement.innerHTML = `
-                            <div>
-                                <h3 class="text-lg font-semibold text-white">${item.nombre}</h3>
-                                ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
-                            </div>
-                            <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
-                        `;
-                        categoryContainer.appendChild(itemElement);
-                    });
+                    crearCategoriaHTML(category, itemsByCategory[category]);
                 });
             }
+
+            function crearCategoriaHTML(categoryTitleText, itemsArray) {
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-separator';
+                const categoryTitle = document.createElement('span');
+                categoryTitle.className = 'category-title';
+                categoryTitle.textContent = categoryTitleText;
+                
+                // Si es Menú del Día, le ponemos un color especial
+                if(categoryTitleText === 'Menú del Día') categoryTitle.style.color = '#fff';
+
+                categoryHeader.appendChild(categoryTitle);
+                menuContainer.appendChild(categoryHeader);
+                
+                const categoryContainer = document.createElement('div');
+                categoryContainer.className = 'bg-gray-900 bg-opacity-50 rounded-lg shadow-lg mb-6';
+                menuContainer.appendChild(categoryContainer);
+
+                itemsArray.forEach(item => {
+                    const precioMenu = calcularPrecioMenu(item.precio);
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'menu-item p-4 flex justify-between items-start';
+                    itemElement.innerHTML = `
+                        <div>
+                            <h3 class="text-lg font-semibold text-white">${item.nombreLimpio}</h3>
+                            ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
+                        </div>
+                        <p class="text-lg font-semibold text-white whitespace-nowrap ml-4">$${precioMenu.toLocaleString('es-AR')}</p>
+                    `;
+                    categoryContainer.appendChild(itemElement);
+                });
+            }
+
+            // --- LÓGICA DE CAPTURA DE ESTADOS DE WHATSAPP ---
+            function prepararBotonDescarga(items) {
+                const platosMenuDia = items.filter(plato => plato.nombre.includes('*MENU DIA*'));
+                const btnContainer = document.getElementById('descargarEstadosBtnContainer');
+                
+                // Si hay platos del día, mostramos el botón
+                if (platosMenuDia.length > 0) {
+                    btnContainer.style.display = 'block';
+                } else {
+                    btnContainer.style.display = 'none';
+                }
+            }
+
+            document.getElementById('btnDescargarEstados').addEventListener('click', async () => {
+                const platosMenuDia = globalItems.filter(plato => plato.nombre.includes('*MENU DIA*'));
+                
+                if (platosMenuDia.length === 0) return;
+
+                // Dividir en grupos de 2 (Chunking)
+                const gruposDePlatos = [];
+                for (let i = 0; i < platosMenuDia.length; i += 2) {
+                    gruposDePlatos.push(platosMenuDia.slice(i, i + 2));
+                }
+
+                const molde = document.getElementById('moldeEstado');
+                const contenedorPlatos = document.getElementById('platosEstado');
+                const btn = document.getElementById('btnDescargarEstados');
+                
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = 'Generando imágenes... ⏳';
+                btn.disabled = true;
+
+                for (let i = 0; i < gruposDePlatos.length; i++) {
+                    const grupo = gruposDePlatos[i];
+                    contenedorPlatos.innerHTML = ''; // Limpiamos la pizarra
+                    
+                    grupo.forEach(plato => {
+                        const nombreLimpio = plato.nombre.replace('*MENU DIA*', '').trim();
+                        // El precio que mostramos en la placa es el final (con recargo) tal cual pidió el cliente
+                        const precioMenu = calcularPrecioMenu(plato.precio); 
+                        
+                        contenedorPlatos.innerHTML += `
+                            <div style="margin-bottom: 30px; font-family: 'Kalam', cursive; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+                                <div style="font-size: 2.2rem; line-height: 1.1;">${nombreLimpio}</div>
+                                <div style="font-size: 1.8rem; color: #FFC857;">$${precioMenu.toLocaleString('es-AR')}</div>
+                            </div>
+                        `;
+                    });
+
+                    // Le damos un momento al navegador para que dibuje las letras
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
+                    try {
+                        const canvas = await html2canvas(molde, {
+                            scale: 2, // Mejora la calidad de la foto
+                            useCORS: true, // Permite cargar la imagen de postimg
+                            backgroundColor: null
+                        });
+
+                        const link = document.createElement('a');
+                        link.download = `Menu_del_Dia_BarEspanol_${i + 1}.jpg`;
+                        link.href = canvas.toDataURL('image/jpeg', 0.9);
+                        link.click();
+                        
+                        // Esperamos un segundito entre descargas si hay más de una foto
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                    } catch (error) {
+                        console.error("Error al generar la imagen:", error);
+                        alert("Hubo un problema al generar la imagen. Intentá desde otro dispositivo o navegador.");
+                    }
+                }
+                
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
         });
     </script>
 </body>
