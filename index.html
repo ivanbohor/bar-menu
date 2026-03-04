@@ -199,7 +199,6 @@
                 const homeContainer = document.getElementById('home-text-container');
                 
                 if (promo) {
-                    // Quitamos la frase del "chanchito" tal como pediste
                     let textoFinalPromo = promo;
                     if(textoFinalPromo.includes('Plato especial')) {
                         textoFinalPromo = "Precios de lista. Todos los medios de pago 💳|10% de Descuento abonando en EFECTIVO 💸";
@@ -221,7 +220,6 @@
                         });
                     }
                     
-                    // ICONOS DE DELIVERY (Usando tus variables de Postimg)
                     if (segundo) {
                         let appsHtml = '<div class="flex flex-wrap justify-center items-center gap-4 mt-4">';
                         segundo.split('|').forEach(part => {
@@ -303,19 +301,21 @@
                         let platosHtmlDescarga = '';
                         
                         chunk.forEach(plato => {
-                            const precio = calcularPrecioMenu(plato.precio);
+                            // AQUÍ ESTÁ LA MAGIA: El menú del día ya no usa calcularPrecioMenu().
+                            // Toma el precio en efectivo directo del Excel.
+                            const precioCrudo = plato.precio; 
                             
                             platosHtmlWeb += `
                                 <div class="mb-2 w-full px-1">
                                     <div class="text-[1.1rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
-                                    <div class="text-[1.1rem] text-[#FFC857] mt-0.5 font-bold">$${precio.toLocaleString('es-AR')}</div>
+                                    <div class="text-[1.1rem] text-[#FFC857] mt-0.5 font-bold">$${precioCrudo.toLocaleString('es-AR')}</div>
                                 </div>
                             `;
                             
                             platosHtmlDescarga += `
                                 <div class="mb-6 w-full px-2">
                                     <div class="text-[2.2rem] leading-tight text-white font-bold tracking-wide break-words">${plato.nombreLimpio}</div>
-                                    <div class="text-[1.8rem] text-[#FFC857] mt-2 font-bold">$${precio.toLocaleString('es-AR')}</div>
+                                    <div class="text-[1.8rem] text-[#FFC857] mt-2 font-bold">$${precioCrudo.toLocaleString('es-AR')}</div>
                                 </div>
                             `;
                         });
@@ -379,7 +379,7 @@
                     }
                 }
 
-                // --- 2. DIBUJAR EL RESTO DEL MENÚ ---
+                // --- 2. DIBUJAR EL RESTO DEL MENÚ (A ESTOS SÍ SE LES APLICA EL RECARGO) ---
                 if (regularItems.length > 0) {
                     tituloMenuResto.style.display = 'block'; 
                     
@@ -400,6 +400,7 @@
                         restoMenuContainer.appendChild(catContainer);
 
                         itemsByCategory[category].forEach(item => {
+                            // A los ítems regulares sí les sumamos el 10% de recargo
                             const precioMenu = calcularPrecioMenu(item.precio);
                             catContainer.innerHTML += `
                                 <div class="menu-item p-4 flex justify-between items-start">
