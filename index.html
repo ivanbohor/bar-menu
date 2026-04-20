@@ -35,6 +35,10 @@
         .header-subtitle { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 400; color: var(--text-color); letter-spacing: 0.05em; margin-top: -0.25rem; }
         .menu-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-align: center; margin-top: 1rem; margin-bottom: 1.5rem; }
         .hoy-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; color: var(--primary-accent); text-align: center; margin-bottom: 1.2rem; }
+        
+        /* Nuevo estilo para el título de Desayunos */
+        .desayuno-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #FFC857; text-align: center; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        
         .category-separator { text-align: center; margin-top: 2.5rem; margin-bottom: 1.5rem; }
         .category-separator::after { content: ''; display: block; width: 150px; height: 20px; margin: 0.5rem auto 0; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="%23FFC857" stroke-width="1" fill="none" /></svg>'); background-repeat: no-repeat; background-position: center; }
         .category-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); }
@@ -64,6 +68,8 @@
         </header>
 
         <main id="menu-container">
+            <div id="desayunos-container" class="mb-10 w-full" style="display: none;"></div>
+
             <h3 id="titulo-hoy" class="hoy-title" style="display: none;">Platos del día</h3>
             
             <div id="menu-dia-container" class="w-full grid grid-cols-2 gap-3 mb-2 px-1"></div>
@@ -104,6 +110,7 @@
             const ICONO_RAPPI = 'https://i.postimg.cc/FRMyNdLR/images.png';         
             const ICONO_MERCADOPAGO = 'https://i.postimg.cc/Qx569s80/merca-rand-mp.webp'; 
 
+            const desayunosContainer = document.getElementById('desayunos-container');
             const menuDiaContainer = document.getElementById('menu-dia-container');
             const restoMenuContainer = document.getElementById('resto-menu-container');
             const plantillasOcultas = document.getElementById('plantillas-ocultas');
@@ -125,9 +132,9 @@
                     const cachedTimestamp = sessionStorage.getItem(CACHE_TIME_KEY);
 
                     if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < CACHE_DURATION_MS) {
-                        const { items, promoText, principalText, segundoText } = JSON.parse(cachedData);
-                        renderHeaderText(promoText, principalText, segundoText);
-                        renderMenu(items);
+                        const data = JSON.parse(cachedData);
+                        renderHeaderText(data.promoText, data.principalText, data.segundoText);
+                        renderMenu(data.items, data.mostrarDesayuno);
                         return; 
                     }
 
@@ -138,13 +145,13 @@
                     let csvText = await response.text();
                     csvText = csvText.replace(/^\uFEFF/, '');
                     
-                    const { items, promoText, principalText, segundoText } = parseCSV(csvText);
+                    const data = parseCSV(csvText);
                     
-                    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ items, promoText, principalText, segundoText }));
+                    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
                     sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
 
-                    renderHeaderText(promoText, principalText, segundoText);
-                    renderMenu(items);
+                    renderHeaderText(data.promoText, data.principalText, data.segundoText);
+                    renderMenu(data.items, data.mostrarDesayuno);
 
                 } catch (error) {
                     restoMenuContainer.innerHTML = `<p class="text-center text-red-500 font-bold">${error.message}</p>`;
@@ -164,6 +171,9 @@
                 const principalIndex = headers.indexOf('principalhome_text');
                 const segundoIndex = headers.indexOf('segundohome_text');
                 
+                // NUEVA COLUMNA MASTER SWITCH
+                const desayunoSwitchIndex = headers.indexOf('mostrar_desayuno');
+                
                 const parseCsvLine = (line) => { 
                     const values = []; let current = ''; let inQuotes = false; 
                     for (const char of line) { 
@@ -180,6 +190,13 @@
                 const principalText = principalIndex !== -1 ? firstDataLineValues[principalIndex] : '';
                 const segundoText = segundoIndex !== -1 ? firstDataLineValues[segundoIndex] : '';
                 
+                // Leer el estado del switch de desayunos (Por defecto false si no existe la columna)
+                let mostrarDesayuno = false;
+                if (desayunoSwitchIndex !== -1 && firstDataLineValues[desayunoSwitchIndex]) {
+                    const switchValue = firstDataLineValues[desayunoSwitchIndex].toLowerCase();
+                    mostrarDesayuno = (switchValue === 'si' || switchValue === 'true' || switchValue === '1');
+                }
+                
                 const items = lines.slice(1).map(line => { 
                     const values = parseCsvLine(line); 
                     const nombre = values[nameIndex] || ''; 
@@ -191,7 +208,7 @@
                     return null; 
                 }).filter(item => item && item.publicado_web !== 'x');
                 
-                return { items, promoText, principalText, segundoText };
+                return { items, promoText, principalText, segundoText, mostrarDesayuno };
             }
             
             function renderHeaderText(promo, principal, segundo) {
@@ -262,7 +279,10 @@
                 return base;
             }
 
-            function renderMenu(items) {
+            // AHORA RECIBE EL ESTADO DEL INTERRUPTOR
+            function renderMenu(items, mostrarDesayuno) {
+                desayunosContainer.innerHTML = '';
+                desayunosContainer.style.display = 'none';
                 menuDiaContainer.innerHTML = '';
                 restoMenuContainer.innerHTML = '';
                 plantillasOcultas.innerHTML = '';
@@ -276,19 +296,55 @@
                 }
 
                 const menuDiaItems = [];
+                const desayunosItems = [];
                 const regularItems = [];
 
+                // SEPARAR EN 3 GRUPOS
                 items.forEach(item => {
                     if (item.nombre.includes('*MENU DIA*')) {
                         item.nombreLimpio = item.nombre.replace('*MENU DIA*', '').trim();
                         menuDiaItems.push(item);
+                    } else if (item.categoria.trim().toLowerCase() === 'desayunos') {
+                        item.nombreLimpio = item.nombre;
+                        desayunosItems.push(item);
                     } else {
                         item.nombreLimpio = item.nombre;
                         regularItems.push(item);
                     }
                 });
                 
-                // --- 1. DIBUJAR LAS PIZARRAS ---
+                // --- 1. DIBUJAR DESAYUNOS (SI EL SWITCH ESTÁ EN "SI") ---
+                if (mostrarDesayuno && desayunosItems.length > 0) {
+                    desayunosContainer.style.display = 'block';
+                    
+                    const header = document.createElement('h3');
+                    header.className = 'desayuno-title';
+                    header.innerHTML = `<i class="bi bi-cup-hot-fill"></i> Desayunos & Promos <i class="bi bi-cup-hot-fill"></i>`;
+                    desayunosContainer.appendChild(header);
+                    
+                    const catContainer = document.createElement('div');
+                    // Estilo sutilmente diferente al resto del menú, borde dorado.
+                    catContainer.className = 'bg-gray-900 bg-opacity-70 rounded-lg shadow-xl border border-yellow-600 border-opacity-30 mb-2';
+                    desayunosContainer.appendChild(catContainer);
+
+                    desayunosItems.forEach(item => {
+                        // OJO: Los desayunos tampoco suelen llevar el +10% al igual que el menú del día.
+                        // Si querés que sumen el 10%, cambiá item.precio por calcularPrecioMenu(item.precio)
+                        const precioCrudo = item.precio; 
+                        
+                        catContainer.innerHTML += `
+                            <div class="menu-item p-4 flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-white">${item.nombreLimpio}</h3>
+                                    ${item.descripcion ? `<p class="text-sm text-gray-400 mt-1">${item.descripcion}</p>` : ''}
+                                </div>
+                                <p class="text-lg font-semibold text-[#FFC857] whitespace-nowrap ml-4">$${precioCrudo.toLocaleString('es-AR')}</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // --- 2. DIBUJAR LAS PIZARRAS ---
                 if (menuDiaItems.length > 0) {
                     tituloHoy.style.display = 'block'; 
                     contenedorDescargaGlobal.style.display = 'block'; 
@@ -301,8 +357,6 @@
                         let platosHtmlDescarga = '';
                         
                         chunk.forEach(plato => {
-                            // AQUÍ ESTÁ LA MAGIA: El menú del día ya no usa calcularPrecioMenu().
-                            // Toma el precio en efectivo directo del Excel.
                             const precioCrudo = plato.precio; 
                             
                             platosHtmlWeb += `
@@ -379,7 +433,7 @@
                     }
                 }
 
-                // --- 2. DIBUJAR EL RESTO DEL MENÚ (A ESTOS SÍ SE LES APLICA EL RECARGO) ---
+                // --- 3. DIBUJAR EL RESTO DEL MENÚ ---
                 if (regularItems.length > 0) {
                     tituloMenuResto.style.display = 'block'; 
                     
@@ -400,7 +454,6 @@
                         restoMenuContainer.appendChild(catContainer);
 
                         itemsByCategory[category].forEach(item => {
-                            // A los ítems regulares sí les sumamos el 10% de recargo
                             const precioMenu = calcularPrecioMenu(item.precio);
                             catContainer.innerHTML += `
                                 <div class="menu-item p-4 flex justify-between items-start">
