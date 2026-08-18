@@ -208,14 +208,14 @@
             function renderHeaderText(promo, principal, segundo) {
                 const promoContainer = document.getElementById('promo-text-container');
                 const homeContainer = document.getElementById('home-text-container');
-                
+                //cambio actualizacion a 6
                 if (promo) {
                     let textoFinalPromo = promo;
                     if(textoFinalPromo.includes('Plato especial')) {
-                        textoFinalPromo = "Precios de lista. Todos los medios de pago 💳|10% de Descuento abonando en EFECTIVO 💸";
+                        textoFinalPromo = "Precios de lista. Todos los medios de pago 💳|6% de Descuento abonando en EFECTIVO 💸";
                     }
                     promoContainer.innerHTML = `<div class="header-text">${textoFinalPromo.replace(/\|/g, '<br>')}</div>`;
-                }
+                 }
 
                 if (principal || segundo) {
                     let htmlContent = '<div class="header-text">';
@@ -265,7 +265,7 @@
             }
             
             function calcularPrecioMenu(precioNeto) {
-                const precioBruto = precioNeto / 0.9;
+                const precioBruto = precioNeto / 0.94; // ANTES ERA 0.9, AHORA ES 0.94 (6%)
                 const resto = Math.floor(precioBruto) % 100;
                 const base = Math.floor(precioBruto / 100) * 100;
                 if (resto > 50) return base + 100;
